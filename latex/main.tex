@@ -4,13 +4,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
+\usepackage{amsmath} % Added for extra math formatting
 
 % for matlab code
 % bw = blackwhite - optimized for print, otherwise source is colored
 \usepackage[framed,numbered,bw]{mcode}
-
-% for other code
-%\usepackage{listings}
 
 \setlength{\parindent}{0em}
 
@@ -19,8 +17,6 @@
 
 \newcommand{\mytitle}[1]{{\noindent\Large\textbf{#1}}}
 \newcommand{\mysection}[1]{\textbf{\section*{#1}}}
-\newcommand{\mysubsection}[2]{\romannumeral #1) #2}
-
 
 %===================================
 \begin{document}
@@ -28,62 +24,243 @@
 \noindent\textbf{GENG8030-MATLAB} \hfill \textbf{University of Windsor}\\
 Winter 2026 \hfill Bob L\\
 
-\mytitle{Course Notes \hfill \today}
+\mytitle{Tutorial 1 Solutions \hfill \today}
 
 
 %===================================
-\mysection{Task 4-1: Grouping Functions}
+\mysection{Problem 3}
+Suppose that $x=5$ and $y=2$. Use MATLAB to compute the following, and check the results with a calculator.
+\begin{enumerate}
+    \item[a.] $(1-\frac{1}{x^{5}})^{-1}$
+    \item[b.] $3\pi x^{2}$
+    \item[c.] $\frac{3y}{4x-8}$
+    \item[d.] $\frac{4(y-5)}{3x-6}$
+\end{enumerate}
 
-\mysubsection{1}{SQL Query}
 \begin{lstlisting}
-SELECT 
-	TeileNr, Farbe, MIN(Preis) AS niedrigster_preis, 
-	MAX(Preis) AS hoechster_preis, 
-	MAX(Preis) - MIN(Preis) AS Differenz 
-FROM 
-	Liefert 
-WHERE 
-	LiefNr <> 0
-GROUP BY 
-	TeileNr, Farbe 
+clear; clc;
+x = 5;
+y = 2;
+
+% a. (1 - 1/x^5)^-1
+result_a = (1 - 1/x^5)^-1;
+
+% b. 3 * pi * x^2
+result_b = 3 * pi * x^2;
+
+% c. (3*y) / (4*x - 8)
+result_c = (3*y) / (4*x - 8);
+
+% d. (4*(y - 5)) / (3*x - 6)
+result_d = (4*(y - 5)) / (3*x - 6);
+
+% Display results
+disp(table(result_a, result_b, result_c, result_d));
 \end{lstlisting}
 
-\mysubsection{2}{SQL Query}
+%===================================
+\mysection{Problem 5}
+Assuming that the variables a, b, c, d, and f are scalars, write MATLAB statements to compute and display the following expressions. Test your statements for the values $a=1.12$, $b=2.34$, $c=0.72$, $d=0.81$ and $f=19.83$.
+\begin{itemize}
+    \item $x=1+\frac{a}{b}+\frac{c}{f^{2}}$
+    \item $r=\frac{1}{\frac{1}{a}+\frac{1}{b}+\frac{1}{c}+\frac{1}{d}}$
+    \item $s=\frac{b-a}{d-c}$
+    \item $y=ab\frac{1}{c}\frac{f^{2}}{2}$
+\end{itemize}
+
 \begin{lstlisting}
-SELECT 
-	TeileNr
-FROM 
-	Liefert 
+clear; clc;
+a = 1.12;
+b = 2.34;
+c = 0.72;
+d = 0.81;
+f = 19.83;
+
+% x = 1 + a/b + c/f^2
+x = 1 + a/b + c/f^2;
+
+% r = 1 / (1/a + 1/b + 1/c + 1/d)
+r = 1 / (1/a + 1/b + 1/c + 1/d);
+
+% s = (b - a) / (d - c)
+s = (b - a) / (d - c);
+
+% y = ab * (1/c) * (f^2/2)
+y = a * b * (1/c) * (f^2/2);
+
+disp(['x = ', num2str(x)]);
+disp(['r = ', num2str(r)]);
+disp(['s = ', num2str(s)]);
+disp(['y = ', num2str(y)]);
 \end{lstlisting}
 
+%===================================
+\mysection{Problem 9}
+The functions realmax and realmin give the largest and smallest possible numbers that can be handled by MATLAB. Calculations generating numbers that are too large or too small result in overflow and underflow. Usually this does not present a problem if you arrange the calculation sequence properly. Type realmax and realmin in MATLAB to determine the upper and lower limits for your system.
+
+For example, suppose you have the variables $a=3\times10^{150}$, $b=5\times10^{200}$.
+\begin{enumerate}
+    \item[a.] Use MATLAB to calculate $c=ab$.
+    \item[b.] Supposed $d=5\times10^{-200}$ use MATLAB to calculate $f=d/a$.
+    \item[c.] Use MATLAB to calculate the product $x=abd$ two ways, i) by calculating the product directly as $x=a^{*}b^{*}d$ and then ii) by splitting up the calculation as $y=b^{*}d$ and then $x=a^{*}y$ Compare the results.
+\end{enumerate}
+
+\begin{lstlisting}
+% Check limits
+realmax
+realmin
+
+a = 3e150;
+b = 5e200;
+
+% a. Calculate c = a*b
+% This will likely result in Inf (Overflow) because 10^150 * 10^200 = 10^350
+c = a * b 
+
+% b. d = 5e-200, calculate f = d/a
+% This will likely result in 0 (Underflow) or very small number
+d = 5e-200;
+f = d / a
+
+% c. Calculate x = abd in two ways
+x1 = a * b * d; % May fail due to intermediate overflow of (a*b)
+y = b * d;      % Pre-calculating smaller product
+x2 = a * y;     % Safer calculation
+
+disp(['Method 1: ', num2str(x1)]);
+disp(['Method 2: ', num2str(x2)]);
+\end{lstlisting}
 
 %===================================
-\mysection{Task 4-2: NULL Values}
-\begin{tabular}{c||c|c|c}
-or & T & U & F\\
-\hline
-\hline
-T & T & T & T \\
-\hline
-U & T & U & U \\
-\hline
-F & T & U & F \\
-\end{tabular} \hspace*{1cm}
-\begin{tabular}{c||c|c|c}
-and & T & U & F\\
-\hline
-\hline
-T & T & U & F \\
-\hline
-U & U & U & F \\
-\hline
-F & F & F & F \\
-\end{tabular}
+\mysection{Problem 22}
+Use MATLAB to calculate:
+\begin{enumerate}
+    \item[a.] $e^{(-2.1)^{3}}+3.47~log(14)+\sqrt[4]{287}$
+    \item[b.] $(3.4)^{7}log(14)+\sqrt[4]{287}$
+    \item[c.] $cos^{2}(\frac{4.12\pi}{6})$
+    \item[d.] $cos(\frac{4.12\pi}{6})^{2}$
+\end{enumerate}
+Check your answers with a calculator.
 
+\begin{lstlisting}
+% a. e^(-2.1)^3 + 3.47log(14) + 287^(1/4)
+% Assuming log is log10 based on standard notation, 
+% though MATLAB log() is natural.
+ans_a = exp((-2.1)^3) + 3.47 * log10(14) + nthroot(287, 4);
+
+% b. (3.4)^7 * log(14) + 287^(1/4)
+ans_b = (3.4)^7 * log10(14) + nthroot(287, 4);
+
+% c. cos^2(4.12*pi / 6)
+ans_c = cos((4.12 * pi) / 6)^2;
+
+% d. cos( (4.12*pi / 6)^2 )
+ans_d = cos(((4.12 * pi) / 6)^2);
+\end{lstlisting}
 
 %===================================
-\mysection{Task 4-3: Lorem ipsum}
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+\mysection{Problem 27}
+Use MATLAB to plot the function $T=7 \ln t-8e^{0.3t}$ over the interval $1\le t\le3$. Put a title on the plot and properly label the axes. The variable represents temperature in degrees Celsius: the variable t represents time in minutes.
 
+\begin{lstlisting}
+t = 1:0.01:3; % Define interval
+
+% Function definition (interpreted 'Int' from source as natural log 'ln')
+T = 7 .* log(t) - 8 .* exp(0.3 .* t);
+
+plot(t, T);
+title('Temperature vs Time');
+xlabel('Time (min)');        
+ylabel('Temperature (C)');   
+grid on;
+\end{lstlisting}
+
+%===================================
+\mysection{Problem 30}
+A cycloid is the curve described by a point P on the circumference of a circular wheel of radius r rolling along the x axis. The curve is described in parametric form by the equations:
+\begin{itemize}
+    \item $x=r(\phi-\sin~\phi)$
+    \item $y=r(1-\cos~\phi)$
+\end{itemize}
+Use these equations to plot the cycloid for $r=10$ in. and $0\le\phi\le4\pi$.
+
+\begin{lstlisting}
+r = 10;
+phi = 0 : 0.01 : 4*pi; % Interval 0 to 4pi
+
+% Parametric equations
+x = r .* (phi - sin(phi));
+y = r .* (1 - cos(phi));
+
+plot(x, y);
+title('Cycloid Plot (r=10)');
+xlabel('x');
+ylabel('y');
+axis equal; % Ensures the curve looks correct proportionally
+\end{lstlisting}
+
+%===================================
+\mysection{Problem 34}
+The four-sided figure shown in Figure P34 consists of two triangles having a common side a. The law of cosines for the top triangle states that $a^{2}=b_{1}^{2}+c_{1}^{2}-2b_{1}c_{1}\cos A_{1}$ and a similar equation can be written for the bottom triangle. Develop a procedure for computing the length of side $c_{2}$ if you are given the lengths of sides $b_{1}$, $b_{2}$ and $c_{1}$ and the angles $A_{1}$ and $A_{2}$ in degrees. Write a script file to implement this procedure. 
+
+Test your script, using the following values: $b_{1}=200$ m, $b_{2}=1801$ m, $c_{1}=1201$ m, $A_{1}=120^{\circ}$ and $A_{2}=100^{\circ}$.
+
+\begin{lstlisting}
+% Inputs (using values from source text)
+b1 = 200;       % meters
+b2 = 1801;      % meters (Likely OCR error for 180, but using source value)
+c1 = 1201;      % meters (Likely OCR error for 120, but using source value)
+A1_deg = 120;   % degrees
+A2_deg = 100;   % degrees
+
+% Convert angles to radians
+A1 = deg2rad(A1_deg);
+A2 = deg2rad(A2_deg);
+
+% 1. Find common side 'a' using Top Triangle (Law of Cosines)
+% a^2 = b1^2 + c1^2 - 2*b1*c1*cos(A1)
+a_sq = b1^2 + c1^2 - 2*b1*c1*cos(A1);
+a = sqrt(a_sq);
+
+% 2. Find c2 using Bottom Triangle
+% a^2 = b2^2 + c2^2 - 2*b2*c2*cos(A2)
+% Rearranging for c2: c2^2 - (2*b2*cos(A2))*c2 + (b2^2 - a^2) = 0
+% This is a quadratic equation: Ax^2 + Bx + C = 0
+
+coeff_A = 1;
+coeff_B = -2 * b2 * cos(A2);
+coeff_C = b2^2 - a_sq;
+
+% Calculate roots for side c2
+possible_c2 = roots([coeff_A, coeff_B, coeff_C]);
+
+% Filter for positive real lengths
+c2 = possible_c2(possible_c2 > 0);
+
+disp(['Common side a: ', num2str(a)]);
+disp(['Side c2: ', num2str(c2')]);
+\end{lstlisting}
+
+%===================================
+\mysection{Problem 35}
+Write a script file to compute the three roots of the cubic equation $x^{3}+ax^{2}+bx+c=0$. Use the input function to let the user enter values for a, b, and c.
+
+\begin{lstlisting}
+disp('Solving x^3 + ax^2 + bx + c = 0');
+
+% Input from user
+a = input('Enter value for a: ');
+b = input('Enter value for b: ');
+c = input('Enter value for c: ');
+
+% Coefficient vector for [1, a, b, c]
+coefficients = [1, a, b, c];
+
+% Compute roots
+solution_roots = roots(coefficients);
+
+disp('The roots of the equation are:');
+disp(solution_roots);
+\end{lstlisting}
 
 \end{document}
