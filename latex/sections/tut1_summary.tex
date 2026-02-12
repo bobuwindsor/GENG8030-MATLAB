@@ -1,0 +1,149 @@
+%===================================
+% KEY SUMMARY — Tutorial 1 Concepts
+%===================================
+
+\section*{Key Concepts and Common Pitfalls (Tutorial 1 Summary)}
+
+\subsection*{1. MATLAB Arithmetic and Precedence Rules}
+
+MATLAB follows a strict order of precedence:
+\begin{itemize}
+    \item Parentheses
+    \item Exponentiation
+    \item Multiplication and division
+    \item Addition and subtraction
+\end{itemize}
+
+Incorrect placement of parentheses can completely change results.
+For example:
+\[
+27^{1/3} \neq 27^1/3
+\]
+
+\textcolor{red}{\textbf{Pitfall:}}
+Students frequently misinterpret expressions such as:
+\begin{lstlisting}
+16^-1/2
+16^(-1/2)
+\end{lstlisting}
+which produce different answers due to operator precedence.
+
+\subsection*{2. Scalar Operations vs Mathematical Notation}
+
+MATLAB syntax must be explicit:
+\begin{itemize}
+    \item Multiplication requires \texttt{*}
+    \item Division requires clear parentheses
+\end{itemize}
+
+Example:
+\begin{lstlisting}
+(3*y)/(4*x-8)   % Correct
+3*y/4*x-8       % Often misinterpreted
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}} Missing parentheses leads to unintended evaluation order.
+
+\subsection*{3. Numerical Limits: Overflow and Underflow}
+
+MATLAB floating-point limits can produce:
+\begin{itemize}
+    \item \texttt{Inf} when numbers exceed \texttt{realmax}
+    \item \texttt{0} or precision loss near \texttt{realmin}
+\end{itemize}
+
+Example concept:
+\begin{lstlisting}
+x1 = a*b*d;    % may overflow
+x2 = a*(b*d);  % safer evaluation
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}} Intermediate calculations may overflow even if final results are valid.
+
+\subsection*{4. Built-in Functions and Units}
+
+Key MATLAB functions:
+\begin{itemize}
+    \item \texttt{log()} = natural logarithm
+    \item \texttt{log10()} = base-10 logarithm
+    \item Trigonometric functions use radians
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing \texttt{log()} with base-10 logarithm is a very common mistake.
+
+\subsection*{5. Arrays and Vectorization}
+
+MATLAB operates efficiently on arrays:
+\begin{lstlisting}
+u = 0:0.1:10;
+w = 5*sin(u);
+\end{lstlisting}
+
+Vectorized operations compute many values at once.
+
+\textcolor{red}{\textbf{Pitfall:}}
+Using matrix operators instead of element-wise operators:
+\begin{itemize}
+    \item Use element-wise operators for arrays: \verb|.*|, \verb|./|, \verb|.^|.
+\end{itemize}
+
+\subsection*{6. Plotting Basics}
+
+Core plotting workflow:
+\begin{lstlisting}
+plot(x,y)
+xlabel('x')
+ylabel('y')
+grid on
+\end{lstlisting}
+
+Important steps:
+\begin{itemize}
+    \item Define domain first
+    \item Use consistent units
+    \item Label axes clearly
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Forgetting element-wise operators when computing functions for plotting.
+
+\subsection*{7. Script Files and Execution Order}
+
+When MATLAB executes a name:
+\begin{enumerate}
+    \item Checks variables
+    \item Checks built-in commands
+    \item Searches current folder
+    \item Searches path
+\end{enumerate}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Naming scripts the same as MATLAB functions causes execution errors.
+
+\subsection*{8. Engineering Problem-Solving Workflow}
+
+Recommended steps:
+\begin{itemize}
+    \item Define inputs and outputs clearly
+    \item Verify with simple hand calculations
+    \item Perform a reality check on results
+\end{itemize}
+
+\textbf{Common Mistake:}
+Trusting MATLAB output without verifying physical meaning or units.
+
+\subsection*{9. Debugging Strategy}
+
+Typical error types:
+\begin{itemize}
+    \item Syntax errors (missing brackets, commas)
+    \item Runtime errors (division by zero)
+\end{itemize}
+
+Recommended debugging methods:
+\begin{itemize}
+    \item Remove semicolons to inspect values
+    \item Test simplified cases
+    \item Check intermediate variables
+\end{itemize}
