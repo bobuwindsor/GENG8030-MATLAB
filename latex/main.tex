@@ -4,31 +4,37 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
-\usepackage{amsmath} % Added for extra math formatting
+\usepackage{amsmath} 
+\usepackage{graphicx}
 
 % for matlab code
-% bw = blackwhite - optimized for print, otherwise source is colored
-\usepackage[framed,numbered,bw]{mcode}
+% Remove 'bw' option to enable colored syntax highlighting
+\usepackage[framed,numbered]{mcode}
 
 \setlength{\parindent}{0em}
 
-% set section in CM
-\setkomafont{section}{\normalfont\bfseries\Large}
+% Custom headers
+\setkomafont{section}{\normalfont\bfseries\LARGE}
+\setkomafont{subsection}{\normalfont\bfseries\Large}
 
 \newcommand{\mytitle}[1]{{\noindent\Large\textbf{#1}}}
-\newcommand{\mysection}[1]{\textbf{\section*{#1}}}
+\newcommand{\mypart}[1]{\vspace{1cm}\hrule\vspace{0.5cm}\noindent\textbf{\LARGE #1}\vspace{0.5cm}\hrule\vspace{1cm}}
+\newcommand{\myproblem}[1]{\subsection*{#1}}
 
 %===================================
 \begin{document}
 
 \noindent\textbf{GENG8030-MATLAB} \hfill \textbf{University of Windsor}\\
-Winter 2026 \hfill Bob L\\
+Winter 2026 \hfill Bob Little\\
 
-\mytitle{Tutorial 1 Solutions \hfill \today}
-
+\mytitle{Course Notes \hfill \today}
 
 %===================================
-\mysection{Problem 3}
+% TUTORIAL 1 SECTION
+%===================================
+\mypart{Tutorial 1: An Overview of MATLAB}
+
+\myproblem{Problem 3}
 Suppose that $x=5$ and $y=2$. Use MATLAB to compute the following, and check the results with a calculator.
 \begin{enumerate}
     \item[a.] $(1-\frac{1}{x^{5}})^{-1}$
@@ -58,8 +64,8 @@ result_d = (4*(y - 5)) / (3*x - 6);
 disp(table(result_a, result_b, result_c, result_d));
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 5}
+%-----------------------------------
+\myproblem{Problem 5}
 Assuming that the variables a, b, c, d, and f are scalars, write MATLAB statements to compute and display the following expressions. Test your statements for the values $a=1.12$, $b=2.34$, $c=0.72$, $d=0.81$ and $f=19.83$.
 \begin{itemize}
     \item $x=1+\frac{a}{b}+\frac{c}{f^{2}}$
@@ -70,22 +76,11 @@ Assuming that the variables a, b, c, d, and f are scalars, write MATLAB statemen
 
 \begin{lstlisting}
 clear; clc;
-a = 1.12;
-b = 2.34;
-c = 0.72;
-d = 0.81;
-f = 19.83;
+a = 1.12; b = 2.34; c = 0.72; d = 0.81; f = 19.83;
 
-% x = 1 + a/b + c/f^2
 x = 1 + a/b + c/f^2;
-
-% r = 1 / (1/a + 1/b + 1/c + 1/d)
 r = 1 / (1/a + 1/b + 1/c + 1/d);
-
-% s = (b - a) / (d - c)
 s = (b - a) / (d - c);
-
-% y = ab * (1/c) * (f^2/2)
 y = a * b * (1/c) * (f^2/2);
 
 disp(['x = ', num2str(x)]);
@@ -94,15 +89,14 @@ disp(['s = ', num2str(s)]);
 disp(['y = ', num2str(y)]);
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 9}
-The functions realmax and realmin give the largest and smallest possible numbers that can be handled by MATLAB. Calculations generating numbers that are too large or too small result in overflow and underflow. Usually this does not present a problem if you arrange the calculation sequence properly. Type realmax and realmin in MATLAB to determine the upper and lower limits for your system.
-
-For example, suppose you have the variables $a=3\times10^{150}$, $b=5\times10^{200}$.
+%-----------------------------------
+\myproblem{Problem 9}
+The functions \texttt{realmax} and \texttt{realmin} give the largest and smallest possible numbers that can be handled by MATLAB.
+Suppose you have variables $a=3\times10^{150}$, $b=5\times10^{200}$.
 \begin{enumerate}
     \item[a.] Use MATLAB to calculate $c=ab$.
     \item[b.] Supposed $d=5\times10^{-200}$ use MATLAB to calculate $f=d/a$.
-    \item[c.] Use MATLAB to calculate the product $x=abd$ two ways, i) by calculating the product directly as $x=a^{*}b^{*}d$ and then ii) by splitting up the calculation as $y=b^{*}d$ and then $x=a^{*}y$ Compare the results.
+    \item[c.] Use MATLAB to calculate the product $x=abd$ two ways.
 \end{enumerate}
 
 \begin{lstlisting}
@@ -113,59 +107,47 @@ realmin
 a = 3e150;
 b = 5e200;
 
-% a. Calculate c = a*b
-% This will likely result in Inf (Overflow) because 10^150 * 10^200 = 10^350
+% a. Calculate c = a*b (Expect Overflow)
 c = a * b 
 
-% b. d = 5e-200, calculate f = d/a
-% This will likely result in 0 (Underflow) or very small number
+% b. d = 5e-200, calculate f = d/a (Expect Underflow)
 d = 5e-200;
 f = d / a
 
 % c. Calculate x = abd in two ways
-x1 = a * b * d; % May fail due to intermediate overflow of (a*b)
-y = b * d;      % Pre-calculating smaller product
+x1 = a * b * d; % Risk of intermediate overflow
+y = b * d;      
 x2 = a * y;     % Safer calculation
 
 disp(['Method 1: ', num2str(x1)]);
 disp(['Method 2: ', num2str(x2)]);
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 22}
+%-----------------------------------
+\myproblem{Problem 22}
 Use MATLAB to calculate:
 \begin{enumerate}
-    \item[a.] $e^{(-2.1)^{3}}+3.47~log(14)+\sqrt[4]{287}$
-    \item[b.] $(3.4)^{7}log(14)+\sqrt[4]{287}$
-    \item[c.] $cos^{2}(\frac{4.12\pi}{6})$
-    \item[d.] $cos(\frac{4.12\pi}{6})^{2}$
+    \item[a.] $e^{(-2.1)^{3}}+3.47\log(14)+\sqrt[4]{287}$
+    \item[b.] $(3.4)^{7}\log(14)+\sqrt[4]{287}$
+    \item[c.] $\cos^{2}(\frac{4.12\pi}{6})$
+    \item[d.] $\cos(\frac{4.12\pi}{6})^{2}$
 \end{enumerate}
-Check your answers with a calculator.
 
 \begin{lstlisting}
-% a. e^(-2.1)^3 + 3.47log(14) + 287^(1/4)
-% Assuming log is log10 based on standard notation, 
-% though MATLAB log() is natural.
+% Note: Source likely implies log base 10 for "log(14)" in standard notation,
+% but MATLAB's log() is natural log. Using log10() for base 10.
 ans_a = exp((-2.1)^3) + 3.47 * log10(14) + nthroot(287, 4);
-
-% b. (3.4)^7 * log(14) + 287^(1/4)
 ans_b = (3.4)^7 * log10(14) + nthroot(287, 4);
-
-% c. cos^2(4.12*pi / 6)
 ans_c = cos((4.12 * pi) / 6)^2;
-
-% d. cos( (4.12*pi / 6)^2 )
 ans_d = cos(((4.12 * pi) / 6)^2);
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 27}
-Use MATLAB to plot the function $T=7 \ln t-8e^{0.3t}$ over the interval $1\le t\le3$. Put a title on the plot and properly label the axes. The variable represents temperature in degrees Celsius: the variable t represents time in minutes.
+%-----------------------------------
+\myproblem{Problem 27}
+Use MATLAB to plot the function $T=7 \ln t-8e^{0.3t}$ over the interval $1\le t\le3$.
 
 \begin{lstlisting}
-t = 1:0.01:3; % Define interval
-
-% Function definition (interpreted 'Int' from source as natural log 'ln')
+t = 1:0.01:3; 
 T = 7 .* log(t) - 8 .* exp(0.3 .* t);
 
 plot(t, T);
@@ -175,92 +157,264 @@ ylabel('Temperature (C)');
 grid on;
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 30}
-A cycloid is the curve described by a point P on the circumference of a circular wheel of radius r rolling along the x axis. The curve is described in parametric form by the equations:
-\begin{itemize}
-    \item $x=r(\phi-\sin~\phi)$
-    \item $y=r(1-\cos~\phi)$
-\end{itemize}
-Use these equations to plot the cycloid for $r=10$ in. and $0\le\phi\le4\pi$.
+%-----------------------------------
+\myproblem{Problem 30}
+A cycloid is described by $x=r(\phi-\sin~\phi)$ and $y=r(1-\cos~\phi)$. Plot for $r=10$ and $0\le\phi\le4\pi$.
 
 \begin{lstlisting}
 r = 10;
-phi = 0 : 0.01 : 4*pi; % Interval 0 to 4pi
-
-% Parametric equations
+phi = 0 : 0.01 : 4*pi; 
 x = r .* (phi - sin(phi));
 y = r .* (1 - cos(phi));
 
 plot(x, y);
 title('Cycloid Plot (r=10)');
-xlabel('x');
-ylabel('y');
-axis equal; % Ensures the curve looks correct proportionally
+xlabel('x'); ylabel('y');
+axis equal; 
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 34}
-The four-sided figure shown in Figure P34 consists of two triangles having a common side a. The law of cosines for the top triangle states that $a^{2}=b_{1}^{2}+c_{1}^{2}-2b_{1}c_{1}\cos A_{1}$ and a similar equation can be written for the bottom triangle. Develop a procedure for computing the length of side $c_{2}$ if you are given the lengths of sides $b_{1}$, $b_{2}$ and $c_{1}$ and the angles $A_{1}$ and $A_{2}$ in degrees. Write a script file to implement this procedure. 
-
-Test your script, using the following values: $b_{1}=200$ m, $b_{2}=1801$ m, $c_{1}=1201$ m, $A_{1}=120^{\circ}$ and $A_{2}=100^{\circ}$.
+%-----------------------------------
+\myproblem{Problem 34}
+Develop a procedure for computing the length of side $c_{2}$ of the two-triangle figure given sides $b_{1}$, $b_{2}$, $c_{1}$ and angles $A_{1}$, $A_{2}$. Test with $b_{1}=200$, $b_{2}=1801$, $c_{1}=1201$, $A_{1}=120^{\circ}$, $A_{2}=100^{\circ}$.
 
 \begin{lstlisting}
-% Inputs (using values from source text)
-b1 = 200;       % meters
-b2 = 1801;      % meters (Likely OCR error for 180, but using source value)
-c1 = 1201;      % meters (Likely OCR error for 120, but using source value)
-A1_deg = 120;   % degrees
-A2_deg = 100;   % degrees
+% Inputs 
+b1 = 200; b2 = 1801; c1 = 1201; 
+A1_deg = 120; A2_deg = 100;
+A1 = deg2rad(A1_deg); A2 = deg2rad(A2_deg);
 
-% Convert angles to radians
-A1 = deg2rad(A1_deg);
-A2 = deg2rad(A2_deg);
-
-% 1. Find common side 'a' using Top Triangle (Law of Cosines)
-% a^2 = b1^2 + c1^2 - 2*b1*c1*cos(A1)
+% 1. Find common side 'a' (Top Triangle Law of Cosines)
 a_sq = b1^2 + c1^2 - 2*b1*c1*cos(A1);
 a = sqrt(a_sq);
 
-% 2. Find c2 using Bottom Triangle
-% a^2 = b2^2 + c2^2 - 2*b2*c2*cos(A2)
-% Rearranging for c2: c2^2 - (2*b2*cos(A2))*c2 + (b2^2 - a^2) = 0
-% This is a quadratic equation: Ax^2 + Bx + C = 0
-
+% 2. Find c2 (Bottom Triangle) solving quadratic: 
+% c2^2 - (2*b2*cos(A2))*c2 + (b2^2 - a^2) = 0
 coeff_A = 1;
 coeff_B = -2 * b2 * cos(A2);
 coeff_C = b2^2 - a_sq;
 
-% Calculate roots for side c2
 possible_c2 = roots([coeff_A, coeff_B, coeff_C]);
+c2 = possible_c2(possible_c2 > 0); % Filter positive
 
-% Filter for positive real lengths
-c2 = possible_c2(possible_c2 > 0);
-
-disp(['Common side a: ', num2str(a)]);
 disp(['Side c2: ', num2str(c2')]);
 \end{lstlisting}
 
-%===================================
-\mysection{Problem 35}
-Write a script file to compute the three roots of the cubic equation $x^{3}+ax^{2}+bx+c=0$. Use the input function to let the user enter values for a, b, and c.
+%-----------------------------------
+\myproblem{Problem 35}
+Write a script to compute the three roots of $x^{3}+ax^{2}+bx+c=0$.
 
 \begin{lstlisting}
-disp('Solving x^3 + ax^2 + bx + c = 0');
+a = input('Enter a: ');
+b = input('Enter b: ');
+c = input('Enter c: ');
+disp(roots([1, a, b, c]));
+\end{lstlisting}
 
-% Input from user
-a = input('Enter value for a: ');
-b = input('Enter value for b: ');
-c = input('Enter value for c: ');
 
-% Coefficient vector for [1, a, b, c]
-coefficients = [1, a, b, c];
+%===================================
+% TUTORIAL 2 SECTION
+%===================================
+\newpage
+\mypart{Tutorial 2: Numeric, Cell and Structure Arrays}
 
-% Compute roots
-solution_roots = roots(coefficients);
+\myproblem{Problem 10}
+Consider the array $A = \begin{bmatrix}1&4&2\\ 2&4&100\\ 7&9&7\\ 3&\pi&42\end{bmatrix}$ and $B = \ln(A)$.
 
-disp('The roots of the equation are:');
-disp(solution_roots);
+Write MATLAB expressions to do the following:
+\begin{enumerate}
+    \item[a.] Select just the second row of B.
+    \item[b.] Evaluate the sum of the second row of B.
+    \item[c.] Multiply the second column of B and the first column of A element by element.
+    \item[d.] Evaluate the maximum value in the vector resulting from element-by-element multiplication of the second column of B with the first column of A.
+    \item[e.] Use element-by-element division to divide the first row of A by the first three elements of the third column of B. Evaluate the sum of the elements of the resulting vector.
+\end{enumerate}
+
+\begin{lstlisting}
+% Define Matrix A
+A = [1, 4, 2;
+     2, 4, 100;
+     7, 9, 7;
+     3, pi, 42];
+
+% Define Matrix B (Natural log is log() in MATLAB)
+B = log(A);
+
+% a. Select second row of B
+part_a = B(2, :);
+
+% b. Sum of second row of B
+part_b = sum(B(2, :));
+
+% c. Multiply 2nd col of B and 1st col of A element-wise
+part_c = B(:, 2) .* A(:, 1);
+
+% d. Max value of result from c
+part_d = max(part_c);
+
+% e. Divide 1st row of A by first 3 elements of 3rd col of B
+% Note: A(1,:) is 1x3. B(1:3, 3) is 3x1. 
+% We must transpose B's slice to match dimensions.
+vec_e = A(1, :) ./ B(1:3, 3)'; 
+part_e = sum(vec_e);
+
+disp(['Sum (Part b): ', num2str(part_b)]);
+disp(['Max (Part d): ', num2str(part_d)]);
+disp(['Sum (Part e): ', num2str(part_e)]);
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 11}
+Create a three-dimensional array D whose three "layers" are matrices A, B, and C. Use MATLAB to find the largest element in each layer of D and the largest element in D.
+
+\begin{lstlisting}
+A = [3, -2, 1; 6, 8, -5; 7, 9, 10];
+B = [6, 9, -4; 7, 5, 3; -8, 2, 1];
+C = [-7, -5, 2; 10, 6, 1; 3, -9, 8];
+
+% Create 3D array D
+D(:, :, 1) = A;
+D(:, :, 2) = B;
+D(:, :, 3) = C;
+
+% Largest element in each layer
+max_layer_1 = max(max(D(:, :, 1)));
+max_layer_2 = max(max(D(:, :, 2)));
+max_layer_3 = max(max(D(:, :, 3)));
+
+% Largest element in D
+max_total = max(D(:));
+
+disp(['Max Total: ', num2str(max_total)]);
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 15}
+Given matrices A, B, and C, verify the associative and commutative laws for addition.
+
+\begin{lstlisting}
+A = [-7, 11; 4, 9];
+B = [4, -5; 12, -2];
+C = [-3, -9; 7, 8];
+
+% a. A + B + C
+res_a = A + B + C;
+
+% b. A - B + C
+res_b = A - B + C;
+
+% c. Verify Associative Law: (A+B)+C = A+(B+C)
+check_assoc = isequal((A+B)+C, A+(B+C));
+
+% d. Verify Commutative Law: A+B+C = B+C+A = A+C+B
+term1 = A + B + C;
+term2 = B + C + A;
+term3 = A + C + B;
+check_comm = isequal(term1, term2) && isequal(term2, term3);
+
+if check_assoc && check_comm
+    disp('Laws Verified');
+else
+    disp('Verification Failed');
+end
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 19}
+Plot the function $f(x)=\frac{4 \cos x}{x+e^{-0.75x}}$ over the interval $-2\le x\le16$.
+
+\begin{lstlisting}
+x = -2 : 0.05 : 16; % Smooth interval
+f = (4 .* cos(x)) ./ (x + exp(-0.75 .* x));
+
+plot(x, f);
+title('Plot of f(x)');
+xlabel('x');
+ylabel('f(x)');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 22}
+A ship travels on a straight line course described by $y=(200-5x)/6$. The ship starts when $x=-20$ and ends when $x=40$. Calculate the distance at closest approach to a lighthouse located at the origin (0,0) without using a plot.
+
+\begin{lstlisting}
+% Define path range
+x = -20 : 0.01 : 40;
+y = (200 - 5 .* x) ./ 6;
+
+% Distance formula d = sqrt(x^2 + y^2)
+distances = sqrt(x.^2 + y.^2);
+
+% Find minimum distance
+min_dist = min(distances);
+
+disp(['Closest approach distance: ', num2str(min_dist), ' km']);
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 23}
+Calculate work done $W=FD$ for five segments of a path given force and distance data. Find (a) work for each segment and (b) total work.
+
+\begin{lstlisting}
+% Data vectors
+Force = [400, 550, 700, 500, 600]; % Newtons
+Distance = [3, 0.5, 0.75, 1.5, 5]; % Meters
+
+% a. Work per segment (Element-wise multiplication)
+Work_segments = Force .* Distance;
+
+% b. Total work
+Work_total = sum(Work_segments);
+
+disp('Work per segment (J):');
+disp(Work_segments);
+disp(['Total Work (J): ', num2str(Work_total)]);
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 27}
+Calculate compression $x$ and potential energy $PE = \frac{1}{2}kx^2$ for five springs given Force $F=kx$ and spring constant $k$.
+
+\begin{lstlisting}
+% Data
+F = [11, 7, 8, 10, 9];          % Force (N)
+k = [1000, 600, 900, 1300, 700]; % Constant (N/m)
+
+% a. Compression x = F / k
+x = F ./ k;
+
+% b. Potential Energy PE = 0.5 * k * x^2
+PE = 0.5 .* k .* (x.^2);
+
+% Display results table
+disp(table(F', k', x', PE', 'VariableNames', {'Force','k','Compression','PE'}));
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 41}
+Solve the following system using the left-division method.
+\[
+\begin{aligned}
+6x - 3y + 4z &= 41 \\
+12x + 5y - 7z &= -26 \\
+-5x + 2y - 6z &= 16
+\end{aligned}
+\]
+
+\begin{lstlisting}
+% Coefficient Matrix A
+A = [ 6, -3,  4;
+     12,  5, -7;
+     -5,  2, -6];
+
+% Constant Vector B
+B = [41; -26; 16];
+
+% Solve for X = [x; y; z] using left division
+Solution = A \ B;
+
+disp('Solution [x; y; z]:');
+disp(Solution);
 \end{lstlisting}
 
 \end{document}
