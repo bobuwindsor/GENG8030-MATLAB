@@ -7,6 +7,7 @@
 \usepackage{amsmath} 
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
 
 % for matlab code
 % Remove 'bw' option to enable colored syntax highlighting
@@ -30,9 +31,24 @@ Winter 2026 \hfill Bob Little\\
 
 \mytitle{Course Notes \hfill \today}
 
+\vspace{1cm}
+\noindent\textbf{\large Table of Contents}
+\vspace{0.5cm}
+
+\begin{itemize}
+    \item \hyperref[tut1]{Tutorial 1: An Overview of MATLAB}
+    \item \hyperref[tut2]{Tutorial 2: Numeric, Cell and Structure Arrays}
+    \item \hyperref[tut3]{Tutorial 3: Functions}
+    \item \hyperref[tut4]{Tutorial 4: Programming with MATLAB}
+    \item \hyperref[tut9]{Tutorial 9: Numerical Methods}
+\end{itemize}
+
+\vspace{0.5cm}
+
 %===================================
 % TUTORIAL 1 SECTION
 %===================================
+\label{tut1}
 \mypart{Tutorial 1: An Overview of MATLAB}
 
 \myproblem{Problem 3}
@@ -216,6 +232,7 @@ disp(roots([1, a, b, c]));
 % TUTORIAL 2 SECTION
 %===================================
 \newpage
+\label{tut2}
 \mypart{Tutorial 2: Numeric, Cell and Structure Arrays}
 
 \myproblem{Problem 10}
@@ -423,6 +440,7 @@ disp(Solution);
 % TUTORIAL 3 SECTION
 %===================================
 \newpage
+\label{tut3}
 \mypart{Tutorial 3: Functions}
 
 \myproblem{Problem 10}
@@ -593,6 +611,7 @@ disp(['Estimated: a=',num2str(a_est),', b=',num2str(b_est),', c=',num2str(c_est)
 % TUTORIAL 4 SECTION
 %===================================
 \newpage
+\label{tut4}
 \mypart{Tutorial 4: Programming with MATLAB}
 
 \myproblem{Problem 2}
@@ -758,6 +777,7 @@ disp(['Minimum valid Length AC: ', num2str(L_AC_min)]);
 % TUTORIAL 9 SECTION
 %===================================
 \newpage
+\label{tut9}
 \mypart{Tutorial 9: Numerical Methods}
 
 \myproblem{Problem 5}
