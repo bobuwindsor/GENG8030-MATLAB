@@ -1,0 +1,140 @@
+%===================================
+% KEY SUMMARY — Tutorial 3 Concepts
+%===================================
+
+\section*{Key Concepts and Common Pitfalls (Tutorial 3 Summary)}
+
+\subsection*{1. Anatomy of a User-Defined Function}
+
+A function must be defined in a separate file (usually) with the following syntax:
+
+\begin{lstlisting}
+function [out1, out2] = my_func_name(in1, in2)
+    % Comments explaining the function (H1 line)
+    
+    out1 = in1 + in2;   % Perform calculations
+    out2 = in1 .* in2;  % Assign values to output variables
+end
+\end{lstlisting}
+
+\textbf{Key Rules:}
+\begin{itemize}
+    \item \textbf{First Line:} Must start with the keyword \texttt{function}.
+    \item \textbf{File Name:} The text file must be named exactly as the function name (e.g., \texttt{my\_func\_name.m}).
+    \item \textbf{Inputs/Outputs:} Inputs are passed by value; outputs must be assigned within the function body before the function terminates.
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Naming the file differently than the function name. MATLAB uses the \textbf{filename} to execute the function, not the name inside the file.
+\begin{itemize}
+    \item File: \texttt{calc.m}
+    \item Code: \texttt{function y = compute(x)}
+    \item Result: You must call \texttt{calc(x)}, not \texttt{compute(x)}.
+\end{itemize}
+
+\subsection*{2. Anonymous Functions}
+
+Simple, one-line functions created without a separate file.
+
+\textbf{Syntax:}
+\texttt{handle = @(arguments) expression}
+
+\textbf{Example:}
+\begin{lstlisting}
+F = @(x) 3*x.^2 + 2*x + 5;
+result = F(2);  % Returns 21
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Forgetting element-wise operators (\texttt{.*}, \texttt{./}, \texttt{.\^{}}) in the definition.
+\begin{itemize}
+    \item \textbf{Wrong:} \texttt{g = @(x) x\^{}2;} (Fails if x is a vector)
+    \item \textbf{Right:} \texttt{g = @(x) x.\^{}2;}
+\end{itemize}
+
+\subsection*{3. Function Functions (Optimization \& Zero Finding)}
+
+These are functions that accept \textit{other} functions (as handles) as input arguments.
+
+\subsubsection*{A. Finding a Minimum of a Single Variable: \texttt{fminbnd}}
+Used to find the minimum of a function $f(x)$ on a fixed interval $x_1 < x < x_2$.
+
+\textbf{Syntax:} \texttt{[x, fval] = fminbnd(fun, x1, x2)}
+
+\textbf{Example:} Find the minimum of $y = x^2 + 4\sin(x)$ between $-3$ and $3$.
+\begin{lstlisting}
+fun = @(x) x.^2 + 4*sin(x);
+[x_min, val_min] = fminbnd(fun, -3, 3);
+% Returns x_min (location) and val_min (function value)
+\end{lstlisting}
+
+\subsubsection*{B. Finding a Zero (Root) of a Function: \texttt{fzero}}
+Used to find \textit{where} a function crosses zero ($f(x) = 0$) near a guess $x_0$.
+
+\textbf{Syntax:} \texttt{x = fzero(fun, x0)}
+
+\textbf{Example:} Find the zero of $y = \cos(x) - x$ near $x=0$.
+\begin{lstlisting}
+fun = @(x) cos(x) - x;
+x_zero = fzero(fun, 0);
+\end{lstlisting}
+
+\subsubsection*{C. Multivariable Minimization: \texttt{fminsearch}}
+Used to find the minimum of a function of \textit{multiple variables} (unconstrained), starting at an initial guess vector $x_0$.
+
+\textbf{Syntax:} \texttt{[x, fval] = fminsearch(fun, x0)}
+
+\textbf{Example:} Find the minimum of $z = x^2 + y^2$ starting at $[1, 1]$.
+\begin{lstlisting}
+% Define function accepting a vector v where v(1)=x, v(2)=y
+fun = @(v) v(1)^2 + v(2)^2;
+start_point = [1, 1];
+[v_min, val_min] = fminsearch(fun, start_point);
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing \texttt{fzero} (finds roots of non-polynomials) with \texttt{roots} (finds roots of polynomials only).
+\begin{itemize}
+    \item Use \texttt{roots([1, 0, -5])} for $x^2 - 5$.
+    \item Use \texttt{fzero(@(x) exp(x) - 5, 0)} for $e^x - 5$.
+\end{itemize}
+
+\subsection*{4. Variable Scope: Local vs. Global}
+
+\begin{itemize}
+    \item \textbf{Local Variables:} Variables defined inside a function are \textit{local}. They are invisible to the MATLAB workspace and other functions. They are erased from memory when the function finishes.
+    \item \textbf{Global Variables:} Variables declared as \texttt{global} (e.g., \texttt{global G}) are shared between the workspace and functions. Both must declare the variable as global.
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Assuming a variable in your Workspace is available inside your function.
+\begin{lstlisting}
+A = 5; % Defined in Workspace
+% Inside function: y = A * x; -> Error! 'A' is unknown.
+\end{lstlisting}
+You must pass \texttt{A} as an input argument or declare it global (less recommended).
+
+\subsection*{5. Subfunctions}
+
+You can define multiple functions in a single file.
+\begin{itemize}
+    \item The \textbf{Primary Function} is the first one; it is callable from outside.
+    \item \textbf{Subfunctions} follow the primary function; they are only callable by the primary function (or other subfunctions in the same file).
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Trying to call a subfunction from the Command Window. It will not be found.
+
+\subsection*{6. Comparison: Script vs. Function}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Script} & \textbf{Function} \\
+\hline
+No input/output arguments & Accepts inputs / returns outputs \\
+Operates on Workspace variables & Uses local variables (mostly) \\
+Useful for drivers/main logic & Useful for reusable modules \\
+\hline
+\end{tabular}
+\end{center}

@@ -1,0 +1,184 @@
+%===================================
+% KEY SUMMARY — Tutorial 2 Concepts
+%===================================
+
+\section*{Key Concepts and Common Pitfalls (Tutorial 2 Summary)}
+
+\subsection*{1. Creating Vectors and Matrices}
+
+MATLAB offers multiple ways to create arrays:
+\begin{itemize}
+    \item \textbf{Row Vector:} \texttt{v = [1, 2, 3]} (comma or space separated)
+    \item \textbf{Column Vector:} \texttt{v = [1; 2; 3]} (semicolon separated)
+    \item \textbf{Colon Operator:} \texttt{start:step:end} (e.g., \texttt{0:0.1:10})
+    \item \textbf{Linspace:} \texttt{linspace(x1, x2, n)} for specific number of points
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing the syntax for steps versus number of points.
+\begin{lstlisting}
+x = 0:10;           % Integers 0 to 10 (step is 1)
+x = linspace(0,10); % 100 points between 0 and 10
+\end{lstlisting}
+
+\subsection*{2. Array Addressing and Slicing}
+
+MATLAB uses \textbf{1-based indexing} (indices start at 1, not 0).
+\begin{itemize}
+    \item \texttt{A(row, col)} selects a specific element.
+    \item \texttt{A(:, n)} selects the entire $n^{th}$ column.
+    \item \texttt{A(m, :)} selects the entire $m^{th}$ row.
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Attempting to access index 0 or an index outside the array dimensions triggers an error.
+\begin{lstlisting}
+val = A(0);       % Error: Indices must be positive integers
+\end{lstlisting}
+
+\subsection*{3. Element-by-Element Operations (The "Dot" Operators)}
+
+When performing arithmetic between two arrays of the same size, you MUST distinguish between matrix math and element-wise math.
+
+\begin{itemize}
+    \item \textbf{Multiplication:} \verb|.*|
+    \item \textbf{Division:} \verb|./|
+    \item \textbf{Exponentiation:} \verb|.^|
+\end{itemize}
+
+Example:
+\begin{lstlisting}
+y = x.^2 + 3*x;   % Correct for vector x
+y = x^2 + 3*x;    % Error (Matrix power requires square matrix)
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Omitting the dot (\texttt{.}) when plotting functions.
+If \texttt{x} is a vector, \texttt{y = x*x} fails because inner dimensions do not agree. You must use \texttt{y = x.*x}.
+
+\subsection*{4. Matrix Multiplication vs. Array Multiplication}
+
+\begin{itemize}
+    \item \texttt{A*B} performs standard linear algebra matrix multiplication (Row $\times$ Column). Inner dimensions must match.
+    \item \texttt{A.*B} multiplies corresponding elements. Dimensions must be identical.
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Assuming matrix multiplication is commutative. In MATLAB (and math), $A*B \neq B*A$.
+
+\subsection*{5. Solving Linear Systems}
+
+To solve systems like $Ax = B$:
+\begin{itemize}
+    \item Use the \textbf{Left Division} operator (\texttt{\textbackslash}).
+    \item Syntax: \texttt{x = A \textbackslash B}.
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Using right division (\texttt{/}) or inverse (\texttt{inv(A)*B}). Left division is numerically more stable and faster for linear equations.
+
+\subsection*{6. Polynomials in MATLAB}
+
+Polynomials are represented as row vectors of coefficients in descending order.
+\begin{itemize}
+    \item $P(x) = 2x^2 + 14x + 20 \rightarrow$ \texttt{p = [2, 14, 20]}
+    \item \textbf{Find Roots:} \texttt{roots(p)}
+    \item \textbf{Evaluate:} \texttt{polyval(p, x)}
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Forgetting to include zeros for missing powers.
+For $x^3 + 5$, the vector is \texttt{[1, 0, 0, 5]}, not \texttt{[1, 5]}.
+
+\subsection*{7. Vector Properties: Magnitude, Length, and Absolute Value}
+
+It is crucial to distinguish between these three terms in MATLAB:
+
+\begin{itemize}
+    \item \textbf{Length:} \texttt{length(x)} returns the number of elements in the vector.
+    \item \textbf{Absolute Value:} \texttt{abs(x)} returns a vector where every element is positive.
+    \item \textbf{Magnitude (Geometric Length):} This is a scalar value representing the geometric length $\sqrt{x_1^2 + x_2^2 + ...}$. It is calculated using \texttt{norm(x)} or \texttt{sqrt(x'*x)}.
+\end{itemize}
+
+\textbf{Specific Example:}
+\begin{lstlisting}
+x = [2, -4, 5];
+
+L = length(x);     % Result: 3 (elements)
+A = abs(x);        % Result: [2, 4, 5] (vector)
+M = norm(x);       % Result: 6.7082 (scalar)
+% Magnitude Calculation: sqrt(2^2 + (-4)^2 + 5^2) = 6.7082
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing \texttt{length(x)} (count of items) with \texttt{norm(x)} (geometric size/magnitude).
+
+\subsection*{8. Essential Data Analysis Functions}
+
+MATLAB provides built-in functions to analyze and locate data within arrays.
+
+\begin{itemize}
+    \item \textbf{Finding Indices:} \texttt{find(A)}
+    \begin{itemize}
+        \item \texttt{k = find(A)}: Returns linear indices of nonzero elements.
+        \item \texttt{[row, col] = find(A)}: Returns row and column indices separately.
+        \item \texttt{[row, col, val] = find(A)}: Returns row, column, AND the nonzero values themselves.
+    \end{itemize}
+
+    \item \textbf{Min/Max Values:} \texttt{min(A)} and \texttt{max(A)}
+    \begin{itemize}
+        \item \texttt{val = max(A)}: Returns the largest value.
+        \item \texttt{[val, k] = max(A)}: Returns the largest value \textbf{and} its index \texttt{k}.
+    \end{itemize}
+
+    \item \textbf{Sorting and Summing:}
+    \begin{itemize}
+        \item \texttt{sort(A)}: Sorts each column in ascending order.
+        \item \texttt{sum(A)}: Computes the sum of elements (column-wise for matrices).
+    \end{itemize}
+\end{itemize}
+
+\textbf{Specific Example (Min/Max Indices):}
+\begin{lstlisting}
+A = [10, 50, 30];
+[val, idx] = max(A);
+% val = 50
+% idx = 2
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+If \texttt{A} contains complex numbers, \texttt{max(A)} returns the element with the largest \textbf{magnitude}, not the largest real component.
+
+\subsection*{9. Array Dimensions}
+
+\begin{itemize}
+    \item \texttt{size(A)}: Returns a vector \texttt{[rows, cols]}.
+    \item \texttt{length(A)}: Returns the size of the \textbf{largest} dimension.
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Using \texttt{length()} on a matrix when you specifically need the number of rows. Always use \texttt{size(A, 1)} for rows.
+
+\subsection*{10. Special Matrix Initialization}
+
+MATLAB has dedicated functions to create specific matrices efficiently.
+
+\begin{itemize}
+    \item \textbf{Zeros:} \texttt{zeros(m, n)} creates an $m \times n$ matrix of zeros.
+    \item \textbf{Ones:} \texttt{ones(m, n)} creates an $m \times n$ matrix of ones.
+    \item \textbf{Identity Matrix:} \texttt{eye(n)} creates an $n \times n$ identity matrix (1s on diagonal, 0s elsewhere).
+\end{itemize}
+
+\textbf{Example Usage:}
+\begin{lstlisting}
+Z = zeros(3, 4);  % 3x4 matrix of zeros
+I = eye(5);       % 5x5 identity matrix
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing the empty matrix \texttt{[]} with the zero matrix.
+\begin{itemize}
+    \item \texttt{A = []} deletes data or creates an empty container.
+    \item \texttt{A = 0} creates a scalar zero.
+    \item \texttt{A = zeros(2)} creates a $2 \times 2$ matrix of zeros.
+\end{itemize}

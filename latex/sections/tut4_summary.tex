@@ -1,0 +1,175 @@
+%===================================
+% KEY SUMMARY — Tutorial 4 Concepts
+%===================================
+
+\section*{Key Concepts and Common Pitfalls (Tutorial 4 Summary)}
+
+\subsection*{1. Relational and Logical Operators}
+
+MATLAB uses specific symbols for comparisons. A common source of bugs is confusing assignment with equality.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|l|c|l|}
+\hline
+\textbf{Operator} & \textbf{Description} & \textbf{Operator} & \textbf{Description} \\
+\hline
+\texttt{==} & Equal to & \texttt{\textasciitilde=} & Not equal to \\
+\texttt{<} & Less than & \texttt{<=} & Less than or equal to \\
+\texttt{>} & Greater than & \texttt{>=} & Greater than or equal to \\
+\hline
+\end{tabular}
+\end{table}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing \texttt{=} (assignment) with \texttt{==} (comparison).
+\begin{lstlisting}
+if x = 5   % Error! Assigns 5 to x inside the condition.
+if x == 5  % Correct. Checks if x is equal to 5.
+\end{lstlisting}
+
+\subsubsection*{Logical Operators \& Short-Circuiting}
+MATLAB distinguishes between element-wise and short-circuit operators.
+
+\begin{itemize}
+    \item \textbf{Element-wise (\texttt{\&}, \texttt{|}, \texttt{\textasciitilde}):} Operates on arrays. Returns an array of logicals.
+    \item \textbf{Short-circuit (\texttt{\&\&}, \texttt{||}):} Operates on \textbf{scalars} only. Used primarily in \texttt{if} and \texttt{while} statements.
+    \begin{itemize}
+        \item \texttt{A \&\& B}: Evaluates A. If A is false, it stops (B is never evaluated).
+        \item \texttt{A || B}: Evaluates A. If A is true, it stops (B is never evaluated).
+    \end{itemize}
+\end{itemize}
+
+\textbf{Order of Precedence:}
+\begin{enumerate}
+    \item Arithmetic operations (\texttt{+}, \texttt{*}, \texttt{\^{}})
+    \item Relational operations (\texttt{>}, \texttt{<}, \texttt{==})
+    \item Logical operations (\texttt{\textasciitilde}, \texttt{\&}, \texttt{|})
+\end{enumerate}
+
+\subsection*{2. Conditional Branching}
+
+\subsubsection*{The \texttt{if-elseif-else} Structure}
+Evaluates expressions sequentially. The first true expression executes its block, and the structure terminates.
+
+\begin{lstlisting}
+if x < 0
+    y = -x;
+elseif x == 0
+    y = 0;
+else
+    y = x^2;
+end
+\end{lstlisting}
+
+\subsubsection*{The \texttt{switch} Structure}
+An alternative to \texttt{if} when comparing a single variable against specific distinct values (cases). It is often more readable for discrete logic.
+
+\begin{lstlisting}
+switch units
+    case {'inch', 'in'}
+        y = x * 2.54;
+    case {'meter', 'm'}
+        y = x * 100;
+    otherwise
+        disp('Unknown unit');
+end
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Using \texttt{switch} for range comparisons (e.g., $x < 5$). \texttt{switch} checks for \textbf{equality} only. Use \texttt{if} for ranges.
+
+\subsection*{3. Iterative Structures (Loops)}
+
+\subsubsection*{The \texttt{for} Loop}
+Used when the number of iterations is known \textbf{before} the loop starts.
+\begin{lstlisting}
+for k = 1:2:10
+    x(k) = k^2;
+end
+\end{lstlisting}
+\textbf{Note:} If you iterate over a matrix \texttt{A} (\texttt{for k = A}), MATLAB iterates over the \textbf{columns} of A.
+
+\subsubsection*{The \texttt{while} Loop}
+Used when the number of iterations is unknown and depends on a condition (e.g., convergence errors).
+\begin{lstlisting}
+error = 100;
+while error > 0.01
+    % Update estimate
+    % Update error
+end
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Creating an \textbf{Infinite Loop}. You must ensure the variables inside the \texttt{while} condition change; otherwise, the loop never ends.
+\begin{lstlisting}
+x = 5;
+while x > 0
+    disp(x); 
+    % Missing x = x - 1; -> Infinite loop!
+end
+\end{lstlisting}
+
+\subsection*{4. Logical Indexing vs. The \texttt{find} Command}
+
+Extracting data based on conditions is a core MATLAB skill.
+
+\textbf{Method A: Logical Masking (Preferred for simple replacement)}
+Returns a logical array (1s and 0s).
+\begin{lstlisting}
+A = [5, -2, 3];
+mask = A < 0;    % mask = [0, 1, 0]
+A(mask) = 0;     % A becomes [5, 0, 3]
+\end{lstlisting}
+
+\textbf{Method B: The \texttt{find} Command}
+Returns the \textbf{indices} where the condition is true.
+\begin{lstlisting}
+indices = find(A < 0);  % indices = 2
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Using \texttt{find} when a logical mask suffices.
+\begin{itemize}
+    \item \textbf{Bad:} \texttt{A(find(A>5)) = 0;} (Slower, unnecessary function call)
+    \item \textbf{Good:} \texttt{A(A>5) = 0;} (Faster, cleaner)
+\end{itemize}
+
+\subsection*{5. Performance: Pre-allocation}
+
+MATLAB arrays are dynamic, but resizing them inside a loop is computationally expensive (slow). Always "pre-allocate" memory (reserve space) before the loop.
+
+\textbf{Without Pre-allocation (Slow):}
+\begin{lstlisting}
+for k = 1:10000
+    y(k) = k^2;  % MATLAB must resize 'y' 10,000 times!
+end
+\end{lstlisting}
+
+\textbf{With Pre-allocation (Fast):}
+\begin{lstlisting}
+y = zeros(1, 10000); % Create full array first
+for k = 1:10000
+    y(k) = k^2;  % Fills existing slots
+end
+\end{lstlisting}
+
+\subsection*{6. Loop Control: \texttt{break} vs \texttt{continue}}
+
+\begin{itemize}
+    \item \texttt{break}: Terminates the loop entirely. Execution jumps to the statement \textbf{after} the \texttt{end}.
+    \item \texttt{continue}: Skips the rest of the \textbf{current iteration} and jumps to the next iteration.
+\end{itemize}
+
+\textbf{Example:}
+\begin{lstlisting}
+for k = 1:5
+    if k == 2
+        continue; % Skips 2, goes to 3
+    end
+    if k == 4
+        break;    % Stops loop completely at 4
+    end
+    disp(k);      % Displays: 1, 3
+end
+\end{lstlisting}

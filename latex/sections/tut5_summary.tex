@@ -1,0 +1,141 @@
+%===================================
+% KEY SUMMARY — Tutorial 9 Concepts
+%===================================
+
+\section*{Key Concepts and Common Pitfalls (Tutorial 9 Summary)}
+
+\subsection*{1. Numerical Integration (Quadrature)}
+
+MATLAB provides two primary approaches for integration: using function handles (for mathematical formulas) or data points (for experimental data).
+
+\subsubsection*{A. Integrating a Function Handle: \texttt{integral}}
+Uses adaptive Simpson's rule. High accuracy.
+\begin{itemize}
+    \item \textbf{Syntax:} \texttt{q = integral(fun, a, b)}
+    \item \textbf{Example:} $\int_{0}^{\pi} \sin(x) dx$
+\end{itemize}
+\begin{lstlisting}
+fun = @(x) sin(x);
+area = integral(fun, 0, pi); % Returns 2.0
+\end{lstlisting}
+
+\subsubsection*{B. Integrating Data Points: \texttt{trapz}}
+Uses the Trapezoidal Rule. Used when you have vectors of data $x$ and $y$, not a formula.
+\begin{itemize}
+    \item \textbf{Syntax:} \texttt{area = trapz(x, y)}
+\end{itemize}
+\begin{lstlisting}
+x = 0:0.1:pi;
+y = sin(x);
+area = trapz(x, y); % Approx 2.0 (depends on spacing)
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Confusing the two methods.
+
+\begin{itemize}
+    \item You cannot pass a vector to \texttt{integral}.
+    \item You cannot pass a function handle to \texttt{trapz} (unless you evaluate it first).
+\end{itemize}
+
+\subsection*{2. Numerical Differentiation}
+
+Differentiation is sensitive to "noise" in data. MATLAB uses the \texttt{diff} function to calculate differences between adjacent elements.
+
+\textbf{Syntax:} \texttt{d = diff(x)}
+\begin{itemize}
+    \item Result vector is 1 element shorter than the input vector ($N-1$ elements).
+    \item \textbf{Approximate Derivative:} $\frac{dy}{dx} \approx \frac{\Delta y}{\Delta x}$
+\end{itemize}
+
+\begin{lstlisting}
+x = [0, 1, 2, 3];
+y = x.^2;        % [0, 1, 4, 9]
+dy = diff(y);    % [1, 3, 5] (Length is 3)
+dx = diff(x);    % [1, 1, 1]
+deriv = dy ./ dx; 
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Plotting the derivative against the original $x$ vector.
+\begin{lstlisting}
+plot(x, deriv) % Error! Vectors must be same length.
+\end{lstlisting}
+\textbf{Fix:} Use \texttt{x(1:end-1)} or calculate a midpoint vector for plotting.
+
+\subsection*{3. Solving ODEs (\texttt{ode45})}
+
+The workhorse for solving Ordinary Differential Equations in MATLAB is \texttt{ode45}. It solves systems of the form $\frac{dy}{dt} = f(t, y)$.
+
+\subsubsection*{A. The Basic Syntax}
+\texttt{[t, y] = ode45(ode\_fun, t\_span, initial\_conditions)}
+\begin{itemize}
+    \item \textbf{ode\_fun:} A handle \texttt{@(t, y) ...} that returns the column vector of derivatives.
+    \item \textbf{t\_span:} \texttt{[t\_start, t\_end]}
+    \item \textbf{initial\_conditions:} Vector of starting values for $y$ (and $y'$ if higher order).
+\end{itemize}
+
+\subsubsection*{B. Solving Higher-Order ODEs}
+You must convert higher-order ODEs into a system of first-order ODEs using **State Variables**.
+
+
+\textbf{Example:} Mass-Spring-Damper $\ddot{x} = \frac{1}{m}(F - c\dot{x} - kx)$
+1. Let $x_1 = x$ (Position)
+2. Let $x_2 = \dot{x}$ (Velocity)
+3. Derivatives:
+   \begin{itemize}
+       \item $\dot{x}_1 = x_2$
+       \item $\dot{x}_2 = \frac{1}{m}(F - c x_2 - k x_1)$
+   \end{itemize}
+
+\begin{lstlisting}
+% Parameters: m=1, c=2, k=5, F=0
+ode_sys = @(t, x) [x(2); (1/1)*(0 - 2*x(2) - 5*x(1))];
+[t, sol] = ode45(ode_sys, [0, 10], [1; 0]); % Init: pos=1, vel=0
+\end{lstlisting}
+
+\textcolor{red}{\textbf{Pitfall:}}
+The derivative function MUST return a \textbf{column vector}.
+\begin{itemize}
+    \item \textbf{Wrong:} \texttt{[x(2), -x(1)]} (Row vector)
+    \item \textbf{Right:} \texttt{[x(2); -x(1)]} (Column vector)
+\end{itemize}
+
+\subsection*{4. ODE Events (Stopping Early)}
+
+Sometimes you need to stop integration based on a condition (e.g., "stop when the rocket hits the ground, $h=0$"), not just time.
+
+\textbf{Steps:}
+1. Define an event function.
+2. Set options using \texttt{odeset}.
+3. Pass options to \texttt{ode45}.
+
+\begin{lstlisting}
+function [value, isterminal, direction] = my_event(t, y)
+    value = y(1);     % Detect when y(1) (height) = 0
+    isterminal = 1;   % 1 = Stop integration
+    direction = -1;   % -1 = Only detect falling (neg slope)
+end
+
+% Usage
+opts = odeset('Events', @my_event);
+[t, y] = ode45(fun, [0, 100], [10; 0], opts);
+\end{lstlisting}
+
+\subsection*{5. Summary of Functions}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Function} & \textbf{Purpose} \\
+\hline
+\texttt{integral(fun, a, b)} & Numerical integration of a formula \\
+\texttt{trapz(x, y)} & Numerical integration of data arrays \\
+\texttt{diff(x)} & Difference between adjacent elements \\
+\texttt{gradient(M)} & Numerical gradient of a matrix \\
+\texttt{ode45} & Standard ODE solver (Runge-Kutta) \\
+\texttt{odeset} & Create options structure for ODE solvers \\
+\hline
+\end{tabular}
+\end{table}
