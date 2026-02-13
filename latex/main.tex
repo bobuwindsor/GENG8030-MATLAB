@@ -852,6 +852,36 @@ plot(t_sol, v_sol); title('Rocket Velocity'); xlabel('t'); ylabel('v');
 \end{lstlisting}
 
 %-----------------------------------
+\myproblem{Problem 21}
+Use the \texttt{diff} function to estimate the derivative of $y=e^{-2x}\frac{\sin(4x)}{x^{2}+3}$ at $x=0.6$.
+
+\begin{lstlisting}
+% Define x with fine resolution around 0.6
+dx = 0.001;
+x = 0 : dx : 1;
+y = exp(-2*x) .* sin(4*x) ./ (x.^2 + 3);
+
+% Calculate approximate derivative dy/dx
+% diff(y) is difference between adjacent elements
+% dividing by dx gives the slope
+dydx = diff(y) ./ dx;
+
+% Find index corresponding to x = 0.6
+% Note: diff result is 1 element shorter than x
+x_diff = x(1:end-1); 
+[~, idx] = min(abs(x_diff - 0.6));
+
+deriv_val = dydx(idx);
+
+disp(['Approximate derivative at x=0.6: ', num2str(deriv_val)]);
+
+% Analytical check (optional, for verification)
+% y' via Chain/Quotient Rule
+x0 = 0.6;
+% ... (manual calc omitted for brevity)
+\end{lstlisting}
+
+%-----------------------------------
 \myproblem{Problem 29}
 Spherical tank draining. $\pi(2rh-h^{2})\frac{dh}{dt}=-C_{d}A\sqrt{2gh}$.
 Radius $r=3$, drain radius 2cm ($0.02$m), $C_d=0.5$, $h(0)=5$. Estimate empty time.
@@ -880,6 +910,93 @@ function [value, isterminal, direction] = stop_event(t, h)
     direction = 0;
 end
 \end{lstlisting}
+%-----------------------------------
+
+\myproblem{Problem 32}
+The motion of a mass is described by $3\ddot{y}+18\dot{y}+102y=f(t)$ with $f(t)=0$ for $t < 0$ and $f(t)=10$ for $t \ge 0$.
+\begin{enumerate}
+    \item[a.] Plot $y(t)$ for $y(0)=\dot{y}(0)=0$ 
+        \item[b.] Plot $y(t)$ for $y(0)=0, \dot{y}(0)=10$. Discuss the effect of nonzero initial velocity.
+\end{enumerate}
+
+\begin{lstlisting}
+% Rewrite as: y_ddot = (1/3)*(f(t) - 18*y_dot - 102*y)
+% State x1 = y, x2 = y_dot
+% dx1 = x2
+% dx2 = (1/3)*(f - 18*x2 - 102*x1)
+
+t_span = [0, 5];
+f_val = 10; 
+
+% a. Zero Initial Conditions
+IC_a = [0; 0];
+ode_a = @(t, x) [x(2); (1/3)*(f_val - 18*x(2) - 102*x(1))];
+[t_a, y_a] = ode45(ode_a, t_span, IC_a);
+
+% b. Non-zero Initial Velocity (y(0)=0, y_dot(0)=10)
+IC_b = [0; 10];
+ode_b = @(t, x) [x(2); (1/3)*(f_val - 18*x(2) - 102*x(1))];
+[t_b, y_b] = ode45(ode_b, t_span, IC_b);
+
+% Plotting
+figure;
+plot(t_a, y_a(:,1), 'b-', 'LineWidth', 1.5); hold on;
+plot(t_b, y_b(:,1), 'r--', 'LineWidth', 1.5);
+legend('Case A: Zero ICs', 'Case B: Init Vel = 10');
+title('Response of Mass-Spring-Damper');
+xlabel('Time (s)'); ylabel('Displacement y(t)');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 44}
+State model with $m=1, c=2, k=5$: 
+\[
+\begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \end{bmatrix} = 
+\begin{bmatrix} 0 & 1 \\ -5 & -2 \end{bmatrix}
+\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + 
+\begin{bmatrix} 0 \\ 1 \end{bmatrix} f(t)
+\]
+\begin{enumerate}
+    \item[a.] Use the \texttt{initial} function to plot position $x_1$ if $x(0)=[5; 3]$.
+    \item[b.] Use the \texttt{step} function to plot the response for step input of magnitude 10.
+\end{enumerate}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/figure9.png}
+\end{figure}
+
+\begin{lstlisting}
+% Define Matrices
+A = [0, 1; -5, -2];
+B = [0; 1];
+C = [1, 0]; % Output y = x1 (Position)
+D = 0;
+
+% Create State Space System (requires Control System Toolbox)
+sys = ss(A, B, C, D);
+
+% a. Initial Response (Free response to initial conditions)
+x0 = [5; 3];
+figure;
+subplot(2,1,1);
+initial(sys, x0); 
+title('a. Response to Initial Conditions x0=[5; 3]');
+grid on;
+
+% b. Step Response (Step magnitude 10)
+% The standard step(sys) assumes input is 1. 
+% For magnitude 10, we scale the system or the input.
+sys_scaled = sys * 10; % Scale input channel by 10
+
+subplot(2,1,2);
+step(sys_scaled);
+title('b. Step Response (Input Magnitude 10)');
+grid on;
+\end{lstlisting}
+
+
 
 %-----------------------------------
 \myproblem{Problem 45}
