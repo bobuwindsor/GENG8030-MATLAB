@@ -778,87 +778,165 @@ function val = fxy(x, y)
 end
 \end{lstlisting}
 
-
 %-----------------------------------
 \myproblem{Problem 28}
-For array $A$, compute $B$ by taking $\ln$ of elements $\ge 1$ and adding 20 to elements $< 1$ (Note: Prompt text says "adding 20 to each element that is equal to or greater than 1", but logic suggests standard masking ops. Following text literally: "natural logarithm of all ... no less than 1, and adding 20 to each element that is equal to or greater than 1". This implies two operations on the same subset? Or is there a typo in the source?
-Re-reading source: "...logarithm of all the elements of A whose value is no less than 1, and adding 20 to each element that is equal to or greater than 1." This is contradictory or redundant. 
-Correction based on standard exercises: Usually it's Log for $x \ge 1$ and Add 20 for $x < 1$. However, I will implement exactly as written in source if possible, or assume the second condition is for the *other* set.
-Let's assume the source meant "add 20 to elements LESS than 1". I will code this interpretation for utility).
+Consider the matrix
+\[
+A=
+\begin{bmatrix}
+3 & 5 & -4\\
+-8 & -1 & 33\\
+-17 & 6 & -9
+\end{bmatrix}.
+\]
+We compute an array $B$ by applying the following rule to each element of $A$:
+\[
+B_{ij}=
+\begin{cases}
+\ln(A_{ij})+20, & A_{ij}\ge 1,\\
+A_{ij}, & A_{ij}<1.
+\end{cases}
+\]
+This is done in two ways: (a) using a \texttt{for} loop with conditional statements, and (b) using a logical mask.
+
+\noindent\textbf{Expected result (approx.):}
+\[
+B\approx
+\begin{bmatrix}
+21.0986 & 21.6094 & -4\\
+-8 & -1 & 23.4965\\
+-17 & 21.7918 & -9
+\end{bmatrix}.
+\]
 
 \begin{lstlisting}
-A = [3, 5, -4; -8, -1, 33; -17, 6, -9];
-B = A; % Initialize B
+% --- Main Script (Problem 28) ---
+A = [  3   5  -4;
+      -8  -1  33;
+     -17   6  -9];
 
-% Method A: Loops
-[rows, cols] = size(A);
-for i = 1:rows
-    for j = 1:cols
+%% (a) Using a for loop + conditionals
+B1 = A;  % start by copying A
+[m,n] = size(A);
+
+for i = 1:m
+    for j = 1:n
         if A(i,j) >= 1
-            B(i,j) = log(A(i,j));
-        else
-            B(i,j) = A(i,j) + 20;
+            B1(i,j) = log(A(i,j)) + 20;  % natural log + 20
         end
     end
 end
-disp('B (Loop method):'); disp(B);
 
-% Method B: Logical Masking
-B_mask = A;
-mask_ge1 = A >= 1;
-mask_lt1 = A < 1;
+%% (b) Using a logical mask
+B2 = A;               % start by copying A
+mask = (A >= 1);      % logical array (true where condition holds)
+B2(mask) = log(A(mask)) + 20;
 
-B_mask(mask_ge1) = log(A(mask_ge1));
-B_mask(mask_lt1) = A(mask_lt1) + 20;
+%% Display results
+disp('A =');  disp(A);
+disp('B1 (loop) ='); disp(B1);
+disp('B2 (mask) ='); disp(B2);
 
-disp('B (Mask method):'); disp(B_mask);
+% Check they match (should be all zeros)
+disp('Max difference between B1 and B2:');
+disp(max(abs(B1(:) - B2(:))));
 \end{lstlisting}
 
 %-----------------------------------
 \myproblem{Problem 40}
-Find $L_{ACmin}$ for a weight supported by two cables using a while loop. $D=6, L_{AB}=3, W=2000$. Conditions: Tension $\le 2000$. $L_{AC}$ varies up to 6.7.
+A weight $W$ is supported by two cables anchored a distance $D$ apart. The left cable length $L_{AB}$ is known, while the right cable length $L_{AC}$ must be selected. For static equilibrium, the horizontal and vertical force sums at point $B$ must be zero, giving
+\[
+-T_{AB}\cos\theta + T_{AC}\cos\phi = 0,
+\qquad
+T_{AB}\sin\theta + T_{AC}\sin\phi = W.
+\]
+The angles $\theta$ and $\phi$ depend on the cable lengths. Using triangle geometry:
+\[
+\theta=\cos^{-1}\!\left(\frac{D^2+L_{AB}^2-L_{AC}^2}{2DL_{AB}}\right),
+\qquad
+\phi=\sin^{-1}\!\left(\frac{L_{AB}\sin\theta}{L_{AC}}\right).
+\]
+Given $D=6~\text{ft}$, $L_{AB}=3~\text{ft}$, and $W=2000~\text{lb}$, we use a \texttt{while} loop in MATLAB to find $L_{AC,\min}$ (the shortest $L_{AC}$ such that neither $T_{AB}$ nor $T_{AC}$ exceeds $2000~\text{lb}$). Then we plot $T_{AB}$ and $T_{AC}$ versus $L_{AC}$ for $L_{AC,\min}\le L_{AC}\le 6.7$.
 
 \begin{lstlisting}
-D = 6; L_AB = 3; W = 2000;
-L_AC = 3.01; % Start slightly > 3 (triangle inequality)
-step = 0.01;
-max_L = 6.7;
+% --- Main Script (Problem 40) ---
+clear; clc; close all;
 
-found_min = false;
-L_AC_min = NaN;
+D   = 6;        % ft
+LAB = 3;        % ft
+W   = 2000;     % lb
+LAC_max = 6.7;  % ft (given)
 
-while L_AC <= max_L
-    % Law of Cosines for angles
-    % D^2 = L_AB^2 + L_AC^2 - 2*L_AB*L_AC*cos(theta_opp_D)? No.
-    % Using formulas from source
-    cos_theta = (D^2 + L_AB^2 - L_AC^2) / (2*D*L_AB);
-    theta = acos(cos_theta);
-    
-    sin_phi = (L_AB * sin(theta)) / L_AC;
-    phi = asin(sin_phi);
-    
-    % Solve Equilibrium Eq
-    % -T_AB*cos(theta) + T_AC*cos(phi) = 0
-    % T_AB*sin(theta) + T_AC*sin(phi) = W
-    
-    % Linear system A_mat * [T_AB; T_AC] = [0; W]
-    A_mat = [-cos(theta), cos(phi); sin(theta), sin(phi)];
-    b_vec = [0; W];
-    T = A_mat \ b_vec;
-    T_AB = T(1); T_AC = T(2);
-    
-    if T_AB <= 2000 && T_AC <= 2000
-        if ~found_min
-            L_AC_min = L_AC;
-            found_min = true;
-        end
+% Step size for searching LAC_min
+dL = 1e-3;
+
+% Start from just above the triangle lower bound |D-LAB| = 3
+LAC = abs(D - LAB) + 1e-4;
+
+TAB = inf;  TAC = inf;
+
+% ---- WHILE LOOP to find LAC_min ----
+while (TAB > W) || (TAC > W)
+    % Compute angles (radians)
+    theta = acos((D^2 + LAB^2 - LAC^2)/(2*D*LAB));
+    phi   = asin((LAB*sin(theta))/LAC);
+
+    % Solve equilibrium for [TAB; TAC]
+    A = [-cos(theta),  cos(phi);
+          sin(theta),  sin(phi)];
+    b = [0; W];
+
+    T = A\b;        % T(1)=TAB, T(2)=TAC
+    TAB = T(1);
+    TAC = T(2);
+
+    % Increase LAC until both tensions are <= W
+    if (TAB > W) || (TAC > W)
+        LAC = LAC + dL;
     end
-    
-    L_AC = L_AC + step;
+
+    % Safety stop (should not happen for this problem)
+    if LAC > LAC_max
+        error('No feasible LAC found up to LAC_max.');
+    end
 end
 
-disp(['Minimum valid Length AC: ', num2str(L_AC_min)]);
-\end{lstlisting}
+LAC_min = LAC;
+fprintf('LAC_min = %.4f ft\n', LAC_min);
+fprintf('TAB = %.2f lb, TAC = %.2f lb\n', TAB, TAC);
+
+% ---- Compute tensions for plotting from LAC_min to 6.7 ----
+Lvec = LAC_min:dL:LAC_max;
+TABv = zeros(size(Lvec));
+TACv = zeros(size(Lvec));
+
+for k = 1:length(Lvec)
+    LAC = Lvec(k);
+
+    theta = acos((D^2 + LAB^2 - LAC^2)/(2*D*LAB));
+    phi   = asin((LAB*sin(theta))/LAC);
+
+    A = [-cos(theta),  cos(phi);
+          sin(theta),  sin(phi)];
+    b = [0; W];
+
+    T = A\b;
+    TABv(k) = T(1);
+    TACv(k) = T(2);
+end
+
+% ---- Plot ----
+figure;
+plot(Lvec, TABv, 'LineWidth', 1.5); hold on;
+plot(Lvec, TACv, 'LineWidth', 1.5);
+yline(W, '--', 'LineWidth', 1.2);  % limit line at 2000 lb
+grid on;
+xlabel('L_{AC} (ft)');
+ylabel('Tension (lb)');
+title('T_{AB} and T_{AC} vs. L_{AC}');
+legend('T_{AB}', 'T_{AC}', 'W = 2000 lb', 'Location', 'be
+
+
 
 %===================================
 % TUTORIAL 9 SECTION
