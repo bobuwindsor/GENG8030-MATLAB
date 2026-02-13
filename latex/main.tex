@@ -702,10 +702,60 @@ num_days = sum(days_below);
 disp(['Days A was below B: ', num2str(num_days)]);
 \end{lstlisting}
 
+%-----------------------------------    
+\myproblem{Problem 16}
+In this problem, we write a MATLAB script using conditional statements to evaluate the piecewise-defined function
+\[
+y(x)=
+\begin{cases}
+e^{x}+1, & x<-1,\\[4pt]
+2+\cos(\pi x), & -1\le x<5,\\[4pt]
+10(x-5)+1, & x\ge 5.
+\end{cases}
+\]
+Using the script, we evaluate $y$ at $x=-5$, $x=3$, and $x=15$, and then verify the results by hand.
+
+\noindent\textbf{By-hand check:}
+\[
+\begin{aligned}
+y(-5) &= e^{-5}+1 \approx 1.0067379,\\
+y(3)  &= 2+\cos(3\pi)=2-1=1,\\
+y(15) &= 10(15-5)+1=101.
+\end{aligned}
+\]
+
+\begin{lstlisting}
+% --- Main Script (Problem 16) ---
+xs = [-5, 3, 15];
+
+for k = 1:length(xs)
+    x = xs(k);
+
+    if x < -1
+        y = exp(x) + 1;
+    elseif x >= -1 && x < 5
+        y = 2 + cos(pi*x);
+    else % x >= 5
+        y = 10*(x - 5) + 1;
+    end
+
+    disp(['x = ', num2str(x), ' -> y = ', num2str(y)]);
+end
+\end{lstlisting}
+
 %-----------------------------------
 \myproblem{Problem 21}
-Create a function \texttt{fxy} to evaluate the piecewise function $f(x,y)$ defined as:
-$x+y$ if $x,y \ge 0$; $x-y$ if $x \ge 0, y < 0$; $-x^2y$ if $x < 0, y \ge 0$; $-x^2y^2$ if $x,y < 0$.
+In this problem, we create a MATLAB function \texttt{fxy(x,y)} to evaluate a piecewise-defined function $f(x,y)$ based on the signs of $x$ and $y$. The function is defined as:
+\[
+f(x,y)=
+\begin{cases}
+x+y, & x\ge 0,\; y\ge 0,\\
+x-y, & x\ge 0,\; y<0,\\
+-x^2y, & x<0,\; y\ge 0,\\
+-x^2y^2, & x<0,\; y<0.
+\end{cases}
+\]
+To verify correctness, we evaluate the function at four test points: $(1,1)$, $(1,-1)$, $(-1,1)$, and $(-1,-1)$, which cover all four regions.
 
 \begin{lstlisting}
 % --- Main Script ---
@@ -727,6 +777,7 @@ function val = fxy(x, y)
     end
 end
 \end{lstlisting}
+
 
 %-----------------------------------
 \myproblem{Problem 28}
