@@ -943,6 +943,126 @@ title('T_{AB} and T_{AC} vs. L_{AC}');
 legend('T_{AB}', 'T_{AC}', 'W = 2000 lb', 'Location', 'best');
 \end{lstlisting}
 
+\myproblem{Problem 42}
+The circuit in Fig.~P42 is governed by the five equations
+\[
+-v_1+R_1 i_1+R_4 i_4=0,\qquad
+-R_4 i_4+R_2 i_2+R_5 i_5=0,\qquad
+-R_5 i_5+R_3 i_3+v_2=0,
+\]
+\[
+i_1=i_2+i_4,\qquad i_2=i_3+i_5.
+\]
+Given $R_1=5~\text{k}\Omega,\;R_2=100~\text{k}\Omega,\;R_3=200~\text{k}\Omega,\;R_4=150~\text{k}\Omega,\;R_5=250~\text{k}\Omega$ and $v_1=100~\text{V}$, each resistor is rated for a current magnitude no larger than $I_{\max}=1~\text{mA}$.  
+
+\textbf{(a)} We determine the allowable range of \emph{positive} values of $v_2$ such that
+\[
+|i_1|,|i_2|,|i_3|,|i_4|,|i_5|\le I_{\max}.
+\]
+
+\textbf{Result for the given numbers (approx.):}
+\[
+\boxed{31.67~\text{V}\ \le\ v_2\ \le\ 742.31~\text{V}}
+\]
+(the lower bound is set by $|i_1|\le 1$ mA and the upper bound is set by $|i_5|\le 1$ mA).
+
+\textbf{(b)} To study the effect of $R_3$, we vary $R_3$ from $150$ to $250$ k$\Omega$ and compute the corresponding upper allowable limit on $v_2$, then plot $v_{2,\max}$ versus $R_3$.
+
+\begin{lstlisting}
+% --- Main Script (Problem 42) ---
+clear; clc; close all;
+
+% Given values (kOhm -> Ohm)
+R1 = 5e3;    R2 = 100e3;  R3 = 200e3;  R4 = 150e3;  R5 = 250e3;
+v1 = 100;            % V
+Imax = 1e-3;          % A
+
+% Helper function: compute allowable v2 interval for a given R3
+% Returns [v2min, v2max] for v2 > 0, based on |currents| <= Imax
+allowable_v2 = @(R3val) local_allowable_v2(R1,R2,R3val,R4,R5,v1,Imax);
+
+%% (a) Allowable range for the given R3
+[v2min, v2max] = allowable_v2(R3);
+fprintf('(a) Allowable v2 range: %.4f V <= v2 <= %.4f V\n', v2min, v2max);
+
+%% (b) Vary R3 from 150 to 250 kOhm, plot the upper allowable limit v2max
+R3vec = linspace(150e3, 250e3, 200);
+v2max_vec = zeros(size(R3vec));
+
+for k = 1:length(R3vec)
+    [~, v2max_vec(k)] = allowable_v2(R3vec(k));
+end
+
+figure;
+plot(R3vec/1e3, v2max_vec, 'LineWidth', 1.5);
+grid on;
+xlabel('R_3 (k\Omega)');
+ylabel('Upper allowable v_2 (V)');
+title('Allowable upper limit of v_2 vs. R_3');
+
+%% -------- Local function (kept at end of script) --------
+function [v2min, v2max] = local_allowable_v2(R1,R2,R3,R4,R5,v1,Imax)
+    % Unknowns: i1,i2,i3,i4,i5
+    % Build linear system A*i = b, where b depends on v2.
+    %
+    % Equations:
+    % -v1 + R1 i1 + R4 i4 = 0
+    % -R4 i4 + R2 i2 + R5 i5 = 0
+    % -R5 i5 + R3 i3 + v2 = 0
+    % i1 - i2 - i4 = 0
+    % i2 - i3 - i5 = 0
+
+    A = [ R1,   0,   0,  R4,   0;
+           0,  R2,   0, -R4,  R5;
+           0,   0,  R3,   0, -R5;
+           1,  -1,   0,  -1,   0;
+           0,   1,  -1,   0,  -1];
+
+    % Solve i(v2) = a + b*v2 by two solves: v2=0 and v2=1
+    b0 = [v1; 0; 0; 0; 0];     % v2 = 0 -> third equation RHS is 0
+    b1 = [v1; 0; -1; 0; 0];    % v2 = 1 -> third equation becomes R3*i3 - R5*i5 = -1
+
+    i0 = A\b0;                 % currents when v2 = 0
+    i1 = A\b1;                 % currents when v2 = 1
+    slope = i1 - i0;           % di/dv2
+    offset = i0;               % i(v2)=offset + slope*v2
+
+    % For each current: |offset + slope*v2| <= Imax gives an interval in v2
+    v_low = -inf;
+    v_high = inf;
+
+    for k = 1:5
+        a = offset(k);
+        m = slope(k);
+
+        if abs(m) < 1e-15
+            % current independent of v2
+            if abs(a) > Imax
+                v_low = 1; v_high = 0; % empty interval
+                break;
+            end
+        else
+            % Solve -Imax <= a + m*v2 <= Imax
+            v1k = (-Imax - a)/m;
+            v2k = ( Imax - a)/m;
+            lo = min(v1k, v2k);
+            hi = max(v1k, v2k);
+
+            v_low = max(v_low, lo);
+            v_high = min(v_high, hi);
+        end
+    end
+
+    % Also require v2 > 0
+    v_low = max(v_low, 0);
+
+    v2min = v_low;
+    v2max = v_high;
+end
+\end{lstlisting}
+
+
+
 %===================================
 % TUTORIAL 9 SECTION
 %===================================
