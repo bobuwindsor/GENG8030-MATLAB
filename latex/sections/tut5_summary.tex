@@ -124,8 +124,8 @@ opts = odeset('Events', @my_event);
 
 \subsection*{5. Summary of Functions}
 
-\begin{table}[h]
-\centering
+\noindent
+\begin{center}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{Function} & \textbf{Purpose} \\
@@ -138,4 +138,173 @@ opts = odeset('Events', @my_event);
 \texttt{odeset} & Create options structure for ODE solvers \\
 \hline
 \end{tabular}
-\end{table}
+\end{center}
+
+\subsection*{6. Control Systems: Transfer Functions and State Variable Form}
+
+MATLAB's Control System Toolbox provides specialized tools for modeling and analyzing Linear Time-Invariant (LTI) systems. You can define these systems in two primary ways: Transfer Functions and State-Space models.
+
+\subsubsection*{A. Transfer Functions (\texttt{tf})}
+A transfer function represents the relationship between the output signal of a control system and the input signal, for all possible input values.
+
+\textbf{Syntax:} \texttt{sys = tf(right, left)} 
+\begin{itemize}
+    \item \textbf{\texttt{right}}: A vector containing the coefficients on the right side of the equation, arranged in descending derivative order.
+    \item \textbf{\texttt{left}}: A vector containing the coefficients on the left side of the equation, also arranged in descending derivative order.
+\end{itemize}
+
+\textbf{Example:}
+Consider the differential equation: $5\ddot{y} + 7\dot{y} + 5y = 5\dot{f} + f(t)$.
+\begin{lstlisting}
+% Create the transfer function model form named sys
+sys = tf([5, 1], [5, 7, 5]);
+
+% Plot the unit step response for zero initial conditions
+step(sys);
+\end{lstlisting}
+
+\subsubsection*{B. State-Space Form (\texttt{ss})}
+For linear differential equations, you can organize your state variables into a standardized matrix format known as the state variable form. This is especially useful for systems with multiple interacting variables.
+
+The standard state-space model relies on four matrices (A, B, C, and D):
+\begin{align*}
+    \dot{x} &= Ax + Bu \\
+    y &= Cx + Du
+\end{align*}
+
+\textbf{Syntax:} \texttt{sys = ss(A, B, C, D)} 
+
+\textbf{Specific Example: Mass-Spring-Damper System}
+
+Let's model a mechanical system with mass $m = 2$, damping surface friction $c = 5$, and spring stiffness $k = 3$. The output we want to track is the position, so $y = x_1$.
+
+
+
+[Image of a mass-spring-damper free body diagram]
+
+
+\textbf{Step 1. The Starting Point: Newton's Second Law}
+
+For a Mass-Spring-Damper system, the fundamental equation of motion is based on the sum of forces ($\Sigma F = ma$). The basic second-order differential equation is:
+$$m\ddot{x} + c\dot{x} + kx = F$$
+Where:
+\begin{itemize}
+    \item $m$ = mass
+    \item $c$ = damping coefficient
+    \item $k$ = spring stiffness
+    \item $x$ = position
+    \item $\dot{x}$ = velocity (first derivative of position)
+    \item $\ddot{x}$ = acceleration (second derivative of position)
+    \item $F$ = external force (often written as $u(t)$ in control systems)
+\end{itemize}
+
+If we rearrange this equation to solve for acceleration ($\ddot{x}$), we divide everything by $m$:
+$$\ddot{x} = \frac{1}{m}(F - c\dot{x} - kx)$$
+
+\textbf{Step 2. Defining the State Variables (Why $\dot{x}_1 = x_2$)}
+
+\textcolor{blue}{\textit{To reduce this second-order equation into first-order equations}}, we invent new variables called "state variables" to represent the distinct physical states of the system (position and velocity).
+\begin{itemize}
+    \item Let $x_1$ = Position ($x$)
+    \item Let $x_2$ = Velocity ($\dot{x}$)
+\end{itemize}
+
+Now, let's take the first derivative of $x_1$:
+If $x_1$ is position, then taking its derivative with respect to time ($\dot{x}_1$) gives us velocity ($\dot{x}$). Since we already defined velocity as $x_2$, it mathematically follows that:
+$$\dot{x}_1 = x_2$$
+
+\textbf{Step 3. Substituting into the Original Equation (Why $\dot{x}_2 = \dots$)}
+
+Now we need an equation for the derivative of our second state variable, $\dot{x}_2$. Since $x_2$ is velocity ($\dot{x}$), its derivative $\dot{x}_2$ is acceleration ($\ddot{x}$).
+
+We go back to our rearranged equation of motion from Step 1:
+$$\ddot{x} = \frac{1}{m}(F - c\dot{x} - kx)$$
+
+Substitute our new state variables into this equation:
+\begin{itemize}
+    \item Replace acceleration ($\ddot{x}$) with $\dot{x}_2$.
+    \item Replace velocity ($\dot{x}$) with $x_2$.
+    \item Replace position ($x$) with $x_1$.
+    \item Replace the input force $F$ with $u(t)$ (standard notation for inputs).
+\end{itemize}
+
+This gives us the final translated equation:
+$$\dot{x}_2 = \frac{1}{m}u(t) - \frac{k}{m}x_1 - \frac{c}{m}x_2$$
+
+
+\textbf{Mathematical Explanation of Matrices A, B, C, and D:}
+
+These equations can be put into matrix form:
+\begin{equation*}
+    \begin{bmatrix} \dot{x}_1 \\ \dot{x}_2 \end{bmatrix} = \begin{bmatrix} 0 & 1 \\ -\frac{k}{m} & -\frac{c}{m} \end{bmatrix} \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} + \begin{bmatrix} 0 \\ \frac{1}{m} \end{bmatrix} u(t)
+\end{equation*}
+
+\begin{itemize}
+    \item \textbf{Matrix $A$ (System Matrix):} Defines the internal system dynamics based on the coefficients of $x_1$ and $x_2$. Here, $A = \begin{bmatrix} 0 & 1 \\ -k/m & -c/m \end{bmatrix}$.
+    \item \textbf{Matrix $B$ (Input Matrix):} Defines how the external input $u(t)$ enters the system. Since the force only directly affects acceleration ($\dot{x}_2$), the first row is $0$ and the second is $1/m$, making $B = \begin{bmatrix} 0 \\ 1/m \end{bmatrix}$.
+    \item \textbf{Matrix $C$ (Output Matrix):} Maps the state variables to the desired output. Since we want position ($y = x_1$), we take $1 \cdot x_1$ and $0 \cdot x_2$, so $C = \begin{bmatrix} 1 & 0 \end{bmatrix}$.
+    \item \textbf{Matrix $D$ (Feedthrough Matrix):} Represents any direct routing from input to output. For most mechanical systems without direct feedthrough, $D = [0]$.
+\end{itemize}
+
+To build this in MATLAB using the \texttt{ss} function, we define the exact values for the A, B, C, and D matrices:
+\begin{lstlisting}[language=MATLAB]
+% Define parameters
+m = 2; c = 5; k = 3;
+
+% Define Matrices
+A = [0, 1; -k/m, -c/m];
+B = [0; 1/m];
+C = [1, 0];
+D = 0;
+
+% Create the LTI state-space object
+sys = ss(A, B, C, D);
+\end{lstlisting}
+
+\subsubsection*{C. Solving with \texttt{ode45} vs. State-Space}
+
+While the State-Space (\texttt{ss}) form is incredibly powerful for Linear Time-Invariant (LTI) systems, MATLAB's \texttt{ode45} is a general-purpose numerical solver that can handle both linear and nonlinear systems. 
+
+To use \texttt{ode45} for equations higher than order 1, you must also write the equation as a set of first-order equations (often called the Cauchy form or the state-variable form). However, instead of strictly passing defined matrices, you pass a function handle that computes the column vector of derivatives $f(t,y)$.
+
+\textbf{Using \texttt{ode45} for the same Mass-Spring-Damper System:}
+\begin{lstlisting}[language=MATLAB]
+function xdot = msd(t, x)
+    % Define parameters and a sample constant input force
+    m = 2; c = 5; k = 3; u = 10; 
+    
+    % Define matrices for clean calculation
+    A = [0, 1; -k/m, -c/m];
+    B = [0; 1/m];
+    
+    % Return column vector of derivatives
+    xdot = A*x + B*u; 
+end
+
+% Call ode45 in the main script
+% For 0 <= t <= 5, with initial conditions x1(0)=0, x2(0)=0
+[t, x] = ode45(@msd, [0, 5], [0; 0]);
+\end{lstlisting}
+
+\textbf{Key Differences for Engineering Applications:}
+\begin{itemize}
+    \item \textbf{Linearity Restrictions:} The \texttt{ss} command requires a strictly linear system. The \texttt{ode45} function can seamlessly simulate nonlinearities, such as a pendulum where the state equation relies on $-\frac{g}{L}\sin(x_1)$ instead of a linear coefficient.
+    \item \textbf{Toolbox Integration:} Creating a \texttt{sys} object unlocks the Control System Toolbox, allowing you to use high-level, single-command analysis functions like \texttt{step(sys)}, \texttt{impulse(sys)}, and \texttt{lsim(sys)}. Conversely, \texttt{ode45} returns raw time and state data that you must plot and analyze manually using standard plotting commands like \texttt{plot(t, x(:,1))}.
+\end{itemize}
+
+
+\subsubsection*{C. Simulating Linear Time-Invariant (LTI) Objects}
+Once your model is created (using either \texttt{tf} or \texttt{ss}), MATLAB has several functions to evaluate how it behaves over time.
+
+\begin{itemize}
+    \item \textbf{\texttt{step(sys)}}: Computes and plots the unit-step response of the LTI object sys.
+    \item \textbf{\texttt{impulse(sys)}}: Computes and plots the unit-impulse response of the LTI object sys.
+    \item \textbf{\texttt{initial(sys, x0)}}: Computes and plots the free response of the LTI object sys given in state-model form, for the initial conditions specified in the vector x0.
+    \item \textbf{\texttt{lsim(sys, u, t)}}: Simulated time response. Computes and plots the response of the LTI object sys to the input specified by the vector u, at the times specified by the vector t.
+\end{itemize}
+
+\textbf{Creating Custom Inputs:} The \texttt{gensig} function makes it easy to construct periodic input functions.
+\begin{itemize}
+    \item \textbf{Syntax:} \texttt{[u, t] = gensig(type, period)} 
+    \item The \texttt{type} can be defined as \texttt{'sin'}, \texttt{'square'}, or \texttt{'pulse'}.
+\end{itemize}
