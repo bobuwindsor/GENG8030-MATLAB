@@ -1,9 +1,75 @@
 %===================================
-% KEY SUMMARY — Tutorial 10 Concepts
+% KEY SUMMARY — Chapter 10 Simulink
 %===================================
 
+\section*{Key Concepts and Common Pitfalls (Chapter 10 Simulink Summary)}
 
-\begin{circuitikz}
-  \draw (0,0) to[R, l=$R$] (2,0)
-              to[C, l=$C$] (4,0);
-\end{circuitikz}
+\subsection*{1. Introduction to Simulink}
+
+Simulink is a graphical programming environment for modeling, simulating, and analyzing systems. % [cite: 10]
+Its primary interface relies on:
+\begin{itemize}
+    \item A graphical block diagramming tool % [cite: 11]
+    \item A customizable set of block libraries % [cite: 11]
+\end{itemize}
+
+\subsection*{2. Solving Differential Equations}
+
+You can build models to solve linear and non-linear differential equations using fundamental blocks: % [cite: 49]
+\begin{itemize}
+    \item Integrators (\(1/s\)) % [cite: 53]
+    \item Gains % [cite: 55]
+    \item Summation elements % [cite: 20]
+    \item Sine Waves % [cite: 55]
+\end{itemize}
+
+\textcolor{red}{\textbf{Pitfall:}}
+Forgetting initial conditions. When using Integrator blocks to solve differential equations, it is crucial to explicitly set the correct initial conditions inside the block parameters. % [cite: 57]
+
+\subsection*{3. Data Export and Integration}
+
+The ``To Workspace'' block allows you to send simulation data directly to the MATLAB base workspace. % [cite: 88, 92]
+\begin{itemize}
+    \item Saving the format as ``Structure With Time'' allows you to plot the variables using standard MATLAB commands. % [cite: 104, 113]
+\end{itemize}
+
+Example command:
+\begin{lstlisting}
+plot(out.Integ.time, out.Integ.signals.values) % [cite: 113]
+\end{lstlisting}
+
+\subsection*{4. Transfer Functions and PID Controllers}
+
+Models can be built using Transfer Function blocks, representing systems like a mass-spring-damper. % [cite: 286, 317]
+
+\textcolor{red}{\textbf{Pitfall:}}
+Incorrect Transfer Function Formatting. Both the numerator and denominator coefficients must be entered as vectors and specified strictly in descending order of the powers of \(s\). % [cite: 287, 289]
+
+\vspace{0.5cm}
+
+Simulink features built-in PID controller blocks to regulate plant models and improve system response. % [cite: 372, 384]
+
+\textcolor{red}{\textbf{Pitfall:}}
+Uncontrolled System Errors. Testing a raw transfer function with a step input might result in the output failing to track the input (e.g., ``Output is not following the input''). % [cite: 357]
+This requires implementing a compensator or PID controller to force the output to match the desired input signal. % [cite: 372, 391]
+
+\subsection*{5. State-Space Modeling}
+
+Systems can be modeled using the state-space equation format by utilizing the State-Space block: % [cite: 211, 212]
+\[
+\dot{x} = Ax + Bu % [cite: 213]
+\]
+\[
+y = Cx + Du % [cite: 214]
+\]
+
+\textcolor{red}{\textbf{Pitfall:}}
+State-Space Matrix Alignment. You must ensure that your matrices (\(A, B, C, D\)) are mathematically aligned and correctly defined in the workspace prior to simulation. % [cite: 216, 219]
+
+\subsection*{6. Electrical Circuit Simulation}
+
+The Simscape Electrical library provides specialized blocks to simulate both steady-state and transient responses for various circuits. % [cite: 402, 408]
+\begin{itemize}
+    \item Electrical Sources (AC/DC) % [cite: 409, 410]
+    \item Passive components (Resistors, Inductors, Capacitors) % [cite: 415, 447]
+\end{itemize}
