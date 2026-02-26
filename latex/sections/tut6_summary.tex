@@ -48,23 +48,15 @@ Nonlinear elements (e.g., $\sin x$, $x^3$, saturation) require \texttt{ode45} be
 Draw a simulation diagram for the equation:
 \[3\dot{y} + 5\sin y = f(t)\]
 
-\begin{lstlisting}
-% Rearrange: y_dot = (f(t) - 5*sin(y)) / 3
-% Assume f(t) = 1 (unit step input)
-f = 1;
-ode = @(t, y) (f - 5*sin(y)) / 3;
-[t, y] = ode45(ode, [0, 10], 0);
 
-plot(t, y);
-title('Solution of 3\dot{y} + 5 sin y = f(t)');
-xlabel('t'); ylabel('y(t)');
-grid on;
-\end{lstlisting}
 
 %-----------------------------------
 \myproblem{Problem 5}
 Draw a simulation diagram for the model:
-\[\dot{x} = -3x + 2y + f(t), \qquad \dot{y} = 4x - 5y\]
+\begin{align*}
+\dot{x} &= -3x + 2y + f(t), \\
+\dot{y} &= 4x - 5y
+\end{align*}
 
 \begin{lstlisting}
 % State vector: s(1) = x, s(2) = y
@@ -123,7 +115,10 @@ grid on;
 %-----------------------------------
 \myproblem{Problem 13}
 Construct a Simulink model to plot solutions for $0 \le t \le 2$:
-\[\dot{x}_1 = -6x_1 + 4x_2, \qquad \dot{x}_2 = 5x_1 - 7x_2 + f(t)\]
+\begin{align*}
+\dot{x}_1 &= -6x_1 + 4x_2, \\
+\dot{x}_2 &= 5x_1 - 7x_2 + f(t)
+\end{align*}
 where $f(t) = 3t$. Use the Ramp block in the Sources library.
 
 \begin{lstlisting}
