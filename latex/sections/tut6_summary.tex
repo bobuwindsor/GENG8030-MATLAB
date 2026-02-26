@@ -48,7 +48,54 @@ Nonlinear elements (e.g., $\sin x$, $x^3$, saturation) require \texttt{ode45} be
 Draw a simulation diagram for the equation:
 \[3\dot{y} + 5\sin y = f(t)\]
 
-
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            oval/.style = {draw, rounded corners=2ex, minimum width=1.2cm, minimum height=0.6cm, align=center},
+            block/.style = {draw, rectangle, minimum height=1.2cm, minimum width=1.2cm, align=center},
+            sum/.style = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+            % Points RIGHT (forward path)
+            gain/.style = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                           minimum height=1cm, minimum width=1cm,
+                           shape border rotate=0, inner sep=2pt},
+            % Points LEFT (feedback path)
+            gainleft/.style = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                                minimum height=1cm, minimum width=1cm,
+                                shape border rotate=180, inner sep=2pt}
+        }
+        % Input Block
+        \node [oval, label=below:{$f(t)$}] (input) {1};
+        % Summing Junction
+        \node [sum, right=1.2cm of input] (sum) {};
+        \node at ($(sum.west)+(0.18,0.12)$) {\tiny $+$};
+        \node at ($(sum.south)+(0.12,0.18)$) {\tiny $-$};
+        % Forward Path Blocks
+        \node [gain, right=0.8cm of sum] (gain1) {$\frac{1}{3}$};
+        \node [block, right=0.8cm of gain1] (int1) {\Large $\frac{1}{s}$};
+        \node [block, right=0.8cm of int1] (int2) {\Large $\frac{1}{s}$};
+        % Output Block
+        \node [oval, label=below:{$y(t)$}, right=1.5cm of int2] (output) {1};
+        % Feedback Path Blocks
+        \node [block, below=1.5cm of int2] (sin) {sin};
+        \node [gainleft, left=1cm of sin] (gain2) {5};
+        % Forward Connections
+        \draw [->] (input) -- (sum);
+        \draw [->] (sum) -- (gain1);
+        \draw [->] (gain1) -- (int1);
+        \draw [->] (int1) -- (int2);
+        % Tap junction and output connection
+        \coordinate (tap) at ($(int2.east)!0.4!(output.west)$);
+        \draw [->] (int2) -- (output);
+        % Feedback Connections
+        \draw [->] (tap) |- (sin);
+        \draw [->] (sin) -- (gain2);
+        \draw [->] (gain2) -| (sum.south);
+        % Draw the tap dot
+        \filldraw (tap) circle (1.5pt);
+    \end{tikzpicture}
+    \caption{Simulink Block Diagram}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 5}
