@@ -1,75 +1,317 @@
 %===================================
-% KEY SUMMARY — Chapter 10 Simulink
+% KEY SUMMARY — Tutorial 10 Concepts
 %===================================
 
-\section*{Key Concepts and Common Pitfalls (Chapter 10 Simulink Summary)}
+\section*{Key Concepts and Common Pitfalls (Tutorial 10 Summary)}
 
-\subsection*{1. Introduction to Simulink}
+\subsection*{1. Simulink vs.\ MATLAB ODE Solvers}
 
-Simulink is a graphical programming environment for modeling, simulating, and analyzing systems. % [cite: 10]
-Its primary interface relies on:
+Simulink provides a block-diagram environment for simulating dynamic systems. The same problems can be solved programmatically in MATLAB using \texttt{ode45}. Key equivalences:
+
 \begin{itemize}
-    \item A graphical block diagramming tool % [cite: 11]
-    \item A customizable set of block libraries % [cite: 11]
+    \item \textbf{Integrator block} $\Leftrightarrow$ state variable (integrate $\dot{x}$ to get $x$)
+    \item \textbf{Gain block} $\Leftrightarrow$ scalar multiplication in the ODE function
+    \item \textbf{Sum block} $\Leftrightarrow$ addition inside the ODE function
+    \item \textbf{Fcn/Math block} $\Leftrightarrow$ nonlinear expression (e.g., \texttt{sin(x)}, \texttt{x\^{}3})
 \end{itemize}
 
-\subsection*{2. Solving Differential Equations}
+\subsection*{2. Converting to State-Variable Form}
 
-You can build models to solve linear and non-linear differential equations using fundamental blocks: % [cite: 49]
+Every $n$th-order ODE must be reduced to $n$ first-order equations before using \texttt{ode45}:
+\begin{enumerate}
+    \item Solve for the highest derivative.
+    \item Let $x_1 = y,\; x_2 = \dot{y},\; \ldots,\; x_n = y^{(n-1)}$.
+    \item Write $\dot{x}_1 = x_2,\; \dot{x}_2 = x_3,\; \ldots,\; \dot{x}_n = (\text{expression from step 1})$.
+\end{enumerate}
+
+\subsection*{3. Transfer Function Approach (Linear Systems)}
+
+For linear systems with zero initial conditions, use the Control System Toolbox:
 \begin{itemize}
-    \item Integrators (\(1/s\)) % [cite: 53]
-    \item Gains % [cite: 55]
-    \item Summation elements % [cite: 20]
-    \item Sine Waves % [cite: 55]
+    \item \texttt{tf(num, den)}: create a transfer function from coefficient vectors
+    \item \texttt{lsim(sys, u, t)}: simulate response to an arbitrary input vector
+    \item \texttt{series(sys1, sys2)}: cascade two transfer functions
 \end{itemize}
 
-\textcolor{red}{\textbf{Pitfall:}}
-Forgetting initial conditions. When using Integrator blocks to solve differential equations, it is crucial to explicitly set the correct initial conditions inside the block parameters. % [cite: 57]
+\subsection*{4. Nonlinear Systems}
 
-\subsection*{3. Data Export and Integration}
+Nonlinear elements (e.g., $\sin x$, $x^3$, saturation) require \texttt{ode45} because the Control System Toolbox only supports LTI systems. Use \texttt{min}/\texttt{max} to implement Saturation blocks.
 
-The ``To Workspace'' block allows you to send simulation data directly to the MATLAB base workspace. % [cite: 88, 92]
-\begin{itemize}
-    \item Saving the format as ``Structure With Time'' allows you to plot the variables using standard MATLAB commands. % [cite: 104, 113]
-\end{itemize}
-
-Example command:
-\begin{lstlisting}
-plot(out.Integ.time, out.Integ.signals.values) % [cite: 113]
-\end{lstlisting}
-
-\subsection*{4. Transfer Functions and PID Controllers}
-
-Models can be built using Transfer Function blocks, representing systems like a mass-spring-damper. % [cite: 286, 317]
-
-\textcolor{red}{\textbf{Pitfall:}}
-Incorrect Transfer Function Formatting. Both the numerator and denominator coefficients must be entered as vectors and specified strictly in descending order of the powers of \(s\). % [cite: 287, 289]
-
+\vspace{1cm}
+\hrule
 \vspace{0.5cm}
 
-Simulink features built-in PID controller blocks to regulate plant models and improve system response. % [cite: 372, 384]
+\section*{Tutorial Problems}
 
-\textcolor{red}{\textbf{Pitfall:}}
-Uncontrolled System Errors. Testing a raw transfer function with a step input might result in the output failing to track the input (e.g., ``Output is not following the input''). % [cite: 357]
-This requires implementing a compensator or PID controller to force the output to match the desired input signal. % [cite: 372, 391]
+%-----------------------------------
+\myproblem{Problem 3}
+Draw a simulation diagram for the equation:
+\[3\dot{y} + 5\sin y = f(t)\]
 
-\subsection*{5. State-Space Modeling}
+\begin{lstlisting}
+% Rearrange: y_dot = (f(t) - 5*sin(y)) / 3
+% Assume f(t) = 1 (unit step input)
+f = 1;
+ode = @(t, y) (f - 5*sin(y)) / 3;
+[t, y] = ode45(ode, [0, 10], 0);
 
-Systems can be modeled using the state-space equation format by utilizing the State-Space block: % [cite: 211, 212]
-\[
-\dot{x} = Ax + Bu % [cite: 213]
-\]
-\[
-y = Cx + Du % [cite: 214]
-\]
+plot(t, y);
+title('Solution of 3\dot{y} + 5 sin y = f(t)');
+xlabel('t'); ylabel('y(t)');
+grid on;
+\end{lstlisting}
 
-\textcolor{red}{\textbf{Pitfall:}}
-State-Space Matrix Alignment. You must ensure that your matrices (\(A, B, C, D\)) are mathematically aligned and correctly defined in the workspace prior to simulation. % [cite: 216, 219]
+%-----------------------------------
+\myproblem{Problem 5}
+Draw a simulation diagram for the model:
+\[\dot{x} = -3x + 2y + f(t), \qquad \dot{y} = 4x - 5y\]
 
-\subsection*{6. Electrical Circuit Simulation}
+\begin{lstlisting}
+% State vector: s(1) = x, s(2) = y
+% Assume f(t) = 1 (unit step)
+f = @(t) 1;
+ode = @(t, s) [-3*s(1) + 2*s(2) + f(t);
+                4*s(1) - 5*s(2)];
+[t, sol] = ode45(ode, [0, 5], [0; 0]);
 
-The Simscape Electrical library provides specialized blocks to simulate both steady-state and transient responses for various circuits. % [cite: 402, 408]
+plot(t, sol(:,1), '-', t, sol(:,2), '--', 'LineWidth', 1.5);
+legend('x(t)', 'y(t)');
+title('State System Simulation');
+xlabel('t'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 8}
+Create a Simulink model to plot the solution for $0 \le t \le 6$:
+\[10\ddot{y} = 7\sin 4t + 5\cos 3t, \qquad y(0)=3,\;\dot{y}(0)=2\]
+
+\begin{lstlisting}
+% State: x(1) = y, x(2) = y_dot
+% y_ddot = (7*sin(4t) + 5*cos(3t)) / 10
+ode = @(t, x) [x(2);
+               (7*sin(4*t) + 5*cos(3*t)) / 10];
+[t, x] = ode45(ode, [0, 6], [3; 2]);
+
+plot(t, x(:,1), 'LineWidth', 1.5);
+title('Solution of 10\ddot{y} = 7sin4t + 5cos3t');
+xlabel('t'); ylabel('y(t)');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 10}
+The equation $\dot{x} + x = \tan t$, $x(0) = 0$ has no analytical solution. The approximate solution (less accurate for large $t$) is:
+\[x(t) = \tfrac{1}{3}t^3 - t^2 + 3t - 3 + 3\,e^{-t}\]
+Compare the numerical and approximate solutions.
+
+\begin{lstlisting}
+% Numerical: x_dot = tan(t) - x
+% Note: tan(t) diverges near t = pi/2 ~= 1.57; limit range
+ode = @(t, x) tan(t) - x;
+[t, x_num] = ode45(ode, [0, 1.4], 0);
+
+% Approximate solution
+x_approx = (1/3)*t.^3 - t.^2 + 3*t - 3 + 3*exp(-t);
+
+plot(t, x_num, 'b-', t, x_approx, 'r--', 'LineWidth', 1.5);
+legend('Numerical (ode45)', 'Approximate');
+title('Comparison: \dot{x} + x = tan t');
+xlabel('t'); ylabel('x(t)');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 13}
+Construct a Simulink model to plot solutions for $0 \le t \le 2$:
+\[\dot{x}_1 = -6x_1 + 4x_2, \qquad \dot{x}_2 = 5x_1 - 7x_2 + f(t)\]
+where $f(t) = 3t$. Use the Ramp block in the Sources library.
+
+\begin{lstlisting}
+% State: s(1) = x1, s(2) = x2
+% f(t) = 3t (ramp with slope 3)
+f = @(t) 3*t;
+ode = @(t, s) [-6*s(1) + 4*s(2);
+                5*s(1) - 7*s(2) + f(t)];
+[t, sol] = ode45(ode, [0, 2], [0; 0]);
+
+plot(t, sol(:,1), '-', t, sol(:,2), '--', 'LineWidth', 1.5);
+legend('x_1(t)', 'x_2(t)');
+title('State Response with Ramp Input f(t) = 3t');
+xlabel('t'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 15}
+Construct a Simulink model to plot solutions for $0 \le t \le 10$:
+\[\dot{x} = -5x + 3y + 5\sin 2t,\quad x(0)=0\]
+\[\dot{y} = 3x - 4y,\quad y(0)=0\]
+
+\begin{lstlisting}
+% State: s(1) = x, s(2) = y
+ode = @(t, s) [-5*s(1) + 3*s(2) + 5*sin(2*t);
+                3*s(1) - 4*s(2)];
+[t, sol] = ode45(ode, [0, 10], [0; 0]);
+
+plot(t, sol(:,1), '-', t, sol(:,2), '--', 'LineWidth', 1.5);
+legend('x(t)', 'y(t)');
+title('State Response with Sinusoidal Forcing');
+xlabel('t'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 18}
+Construct a Simulink model for $5\dot{x} + \sin x = f(t)$, $x(0) = 0$, where $g(t) = 10\sin 4t$ and:
+\[f(t) = \begin{cases} -5 & \text{if } g(t) \le -5 \\ g(t) & \text{if } -5 < g(t) < 5 \\ 5 & \text{if } g(t) \ge 5 \end{cases}\]
+
+\begin{lstlisting}
+% Saturation: clip g(t) to [-5, 5]
+g = @(t) 10 * sin(4*t);
+f = @(t) min(5, max(-5, g(t)));
+
+% ODE: x_dot = (f(t) - sin(x)) / 5
+ode = @(t, x) (f(t) - sin(x)) / 5;
+[t, x] = ode45(ode, [0, 5], 0);
+
+figure;
+subplot(2,1,1);
+plot(t, f(t)); title('Forcing f(t) [Saturated]');
+xlabel('t'); ylabel('f(t)'); grid on;
+subplot(2,1,2);
+plot(t, x); title('Response x(t)');
+xlabel('t'); ylabel('x(t)'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 25}
+Use Transfer Function blocks to plot solutions for $0 \le t \le 2$:
+\[3\ddot{x} + 15\dot{x} + 18x = f(t),\quad x(0)=\dot{x}(0)=0\]
+\[2\ddot{y} + 16\dot{y} + 50y = x(t),\quad y(0)=\dot{y}(0)=0\]
+where $f(t) = 75\,u_s(t)$.
+
+\begin{lstlisting}
+% X(s)/F(s) = 1 / (3s^2 + 15s + 18)
+% Y(s)/X(s) = 1 / (2s^2 + 16s + 50)
+sys_x = tf(1, [3, 15, 18]);
+sys_y = tf(1, [2, 16, 50]);
+
+% Step input: f(t) = 75 * us(t)
+t = 0:0.005:2;
+f_input = 75 * ones(size(t));
+
+x_out = lsim(sys_x, f_input, t);
+y_out = lsim(series(sys_x, sys_y), f_input, t);
+
+figure;
+subplot(2,1,1);
+plot(t, x_out, 'LineWidth', 1.5);
+title('x(t)'); xlabel('t'); grid on;
+subplot(2,1,2);
+plot(t, y_out, 'LineWidth', 1.5);
+title('y(t)'); xlabel('t'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 28}
+Create a Simulink model to plot the solution for $0 \le t \le 1$:
+\[\frac{Y(s)}{F(s)} = \frac{4}{s+5}, \qquad f(t) = u_s(t) - u_s(t-1)\]
+
+\begin{lstlisting}
+sys = tf(4, [1, 5]);
+
+% Pulse input: f(t) = us(t) - us(t-1)
+% Over [0,1]: f(t) = 1 for t < 1, drops to 0 at t = 1
+t = 0:0.001:1;
+f_input = double(t < 1);
+
+y_out = lsim(sys, f_input, t);
+
+plot(t, y_out, 'b-', t, f_input, 'r--', 'LineWidth', 1.5);
+legend('y(t)', 'f(t)');
+title('Response: Y(s)/F(s) = 4/(s+5), Pulse Input');
+xlabel('t'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 33}
+Create a Simulink model for a mass supported by a nonlinear hardening spring, $0 \le t \le 2$:
+\[5\ddot{y} = 5g - (900y + 1700y^3), \qquad y(0)=0.5,\;\dot{y}(0)=0\]
+Use $g = 9.81$ m/s$^2$.
+
+\begin{lstlisting}
+% State: x(1) = y, x(2) = y_dot
+% y_ddot = g - (900*y + 1700*y^3) / 5
+g = 9.81;
+ode = @(t, x) [x(2);
+               g - (900*x(1) + 1700*x(1)^3) / 5];
+[t, x] = ode45(ode, [0, 2], [0.5; 0]);
+
+plot(t, x(:,1), 'LineWidth', 1.5);
+title('Nonlinear Hardening Spring Response');
+xlabel('t (s)'); ylabel('y (m)');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 35}
+The equation for water height $h$ in a spherical tank (radius $r = 3$ m) with drain (radius 2 cm, $C_d = 0.5$), $h(0) = 5$ m:
+\[\pi(2rh - h^2)\frac{dh}{dt} = -C_d A\sqrt{2gh}\]
+Use Simulink to solve the nonlinear equation and plot $h(t)$ until $h(t) = 0$.
+
+\begin{lstlisting}
+r = 3; Cd = 0.5; g = 9.81;
+A = pi * 0.02^2;  % drain area, radius = 0.02 m
+
+% ODE: dh/dt = -Cd*A*sqrt(2gh) / (pi*(2r*h - h^2))
+dhdt = @(t, h) -Cd * A * sqrt(2*g*h) / (pi * (2*r*h - h^2));
+
+opts = odeset('Events', @stop_event, 'RelTol', 1e-6);
+[t, h] = ode45(dhdt, [0, 80000], 5, opts);
+
+plot(t/3600, h, 'LineWidth', 1.5);
+title('Spherical Tank Draining');
+xlabel('Time (hours)'); ylabel('Water Height h (m)');
+grid on;
+fprintf('Tank empties at t = %.2f hours\n', t(end)/3600);
+
+function [value, isterminal, direction] = stop_event(~, h)
+    value = h - 0.001;   % Stop when h < 1 mm
+    isterminal = 1;
+    direction = -1;
+end
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 45}
+Consider the system in Figure P45 with $m_1=m_2=1$, $c_1=3$, $c_2=1$, $k_1=1$, $k_2=4$:
+\[m_1\ddot{x}_1 + (c_1+c_2)\dot{x}_1 + (k_1+k_2)x_1 - c_2\dot{x}_2 - k_2x_2 = 0\]
+\[m_2\ddot{x}_2 + c_2\dot{x}_2 + k_2x_2 - c_2\dot{x}_1 - k_2x_1 = f(t)\]
 \begin{itemize}
-    \item Electrical Sources (AC/DC) % [cite: 409, 410]
-    \item Passive components (Resistors, Inductors, Capacitors) % [cite: 415, 447]
+    \item[a.] Develop a Simulink model using state-variable representation.
+    \item[b.] Plot $x_1(t)$ for zero initial conditions with piecewise input:
+    \[f(t) = \begin{cases} t & 0 \le t \le 1 \\ 2-t & 1 < t < 2 \\ 0 & t \ge 2 \end{cases}\]
 \end{itemize}
+
+\begin{lstlisting}
+% Parameters
+m1=1; m2=1; c1=3; c2=1; k1=1; k2=4;
+
+% Piecewise input (triangular pulse)
+f = @(t) (t >= 0 & t <= 1).*t + (t > 1 & t < 2).*(2 - t);
+
+% State: s = [x1; x1_dot; x2; x2_dot]
+% x1_ddot = [-(c1+c2)*x1_dot - (k1+k2)*x1 + c2*x2_dot + k2*x2] / m1
+% x2_ddot = [f(t) + c2*x1_dot + k2*x1 - c2*x2_dot - k2*x2] / m2
+ode = @(t, s) [
+    s(2);
+    (-(c1+c2)*s(2) - (k1+k2)*s(1) + c2*s(4) + k2*s(3)) / m1;
+    s(4);
+    (f(t) + c2*s(2) + k2*s(1) - c2*s(4) - k2*s(3)) / m2
+];
+
+[t, sol] = ode45(ode, [0, 10], zeros(4, 1));
+
+plot(t, sol(:,1), 'LineWidth', 1.5);
+title('x_1(t) - Two Mass-Spring-Damper System');
+xlabel('t (s)'); ylabel('x_1 (m)');
+grid on;
+\end{lstlisting}
