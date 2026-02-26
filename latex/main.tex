@@ -8,6 +8,8 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage[colorlinks=true, linkcolor=blue, urlcolor=blue]{hyperref}
+\usepackage{circuitikz}
+
 
 % for matlab code
 % Remove 'bw' option to enable colored syntax highlighting
@@ -36,11 +38,12 @@ Winter 2026 \hfill Bob Little\\
 \vspace{0.5cm}
 
 \begin{itemize}
-    \item \hyperref[tut1]{Tutorial 1: An Overview of MATLAB}
-    \item \hyperref[tut2]{Tutorial 2: Numeric, Cell and Structure Arrays}
-    \item \hyperref[tut3]{Tutorial 3: Functions}
-    \item \hyperref[tut4]{Tutorial 4: Programming with MATLAB}
-    \item \hyperref[tut9]{Tutorial 9: Numerical Methods}
+    \item \hyperref[tut1]{Tutorial 01: An Overview of MATLAB}
+    \item \hyperref[tut2]{Tutorial 02: Numeric, Cell and Structure Arrays}
+    \item \hyperref[tut3]{Tutorial 03: Functions}
+    \item \hyperref[tut4]{Tutorial 04: Programming with MATLAB}
+    \item \hyperref[tut9]{Tutorial 09: Numerical Methods}
+    \item \hyperref[tut10]{Tutorial 10: Simulink}
 \end{itemize}
 
 \vspace{0.5cm}
@@ -49,7 +52,7 @@ Winter 2026 \hfill Bob Little\\
 % TUTORIAL 1 SECTION
 %===================================
 \label{tut1}
-\mypart{Tutorial 1: An Overview of MATLAB}
+\mypart{Tutorial 01: An Overview of MATLAB}
 
 \input{sections/tut1_summary}
 
@@ -250,7 +253,7 @@ disp(roots([1, a, b, c]));
 %===================================
 \newpage
 \label{tut2}
-\mypart{Tutorial 2: Numeric, Cell and Structure Arrays}
+\mypart{Tutorial 02: Numeric, Cell and Structure Arrays}
 
 \input{sections/tut2_summary}
 
@@ -465,7 +468,7 @@ disp(Solution);
 %===================================
 \newpage
 \label{tut3}
-\mypart{Tutorial 3: Functions}
+\mypart{Tutorial 03: Functions}
 
 \input{sections/tut3_summary}
 \vspace{1cm}
@@ -642,7 +645,7 @@ disp(['Estimated: a=',num2str(a_est),', b=',num2str(b_est),', c=',num2str(c_est)
 %===================================
 \newpage
 \label{tut4}
-\mypart{Tutorial 4: Programming with MATLAB}
+\mypart{Tutorial 04: Programming with MATLAB}
 \input{sections/tut4_summary}
 
 \vspace{1cm}
@@ -1120,7 +1123,7 @@ Third  & 3 & $-3$ & 1   & $-3$ \\
 %===================================
 \newpage
 \label{tut9}
-\mypart{Tutorial 9: Numerical Methods}
+\mypart{Tutorial 09: Numerical Methods}
 
 \input{sections/tut5_summary}
 
@@ -1338,5 +1341,18 @@ plot(t_step, x_step(:,1), ':', 'DisplayName', 'Step');
 plot(t_tot, x_tot(:,1), 'k-', 'LineWidth', 1.5, 'DisplayName', 'Total');
 legend; title('Superposition of Responses');
 \end{lstlisting}
+
+%===================================
+% TUTORIAL 10 SECTION
+%===================================
+\newpage
+\label{tut10}
+\mypart{Tutorial 10: Simulink}
+
+\input{sections/tut6_summary}
+
+\vspace{1cm}
+\hrule
+\vspace{0.5cm}
 
 \end{document}
