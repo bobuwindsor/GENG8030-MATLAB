@@ -105,37 +105,79 @@ Draw a simulation diagram for the model:
 \dot{y} &= 4x - 5y
 \end{align*}
 
-\begin{lstlisting}
-% State vector: s(1) = x, s(2) = y
-% Assume f(t) = 1 (unit step)
-f = @(t) 1;
-ode = @(t, s) [-3*s(1) + 2*s(2) + f(t);
-                4*s(1) - 5*s(2)];
-[t, sol] = ode45(ode, [0, 5], [0; 0]);
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            oval/.style     = {draw, rounded corners=2ex, minimum width=1.2cm, minimum height=0.6cm, align=center},
+            block/.style    = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            sum/.style      = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+            gainR/.style    = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                               minimum height=0.9cm, shape border rotate=0, inner sep=2pt},
+            gainL/.style    = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                               minimum height=0.9cm, shape border rotate=180, inner sep=2pt},
+        }
 
-plot(t, sol(:,1), '-', t, sol(:,2), '--', 'LineWidth', 1.5);
-legend('x(t)', 'y(t)');
-title('State System Simulation');
-xlabel('t'); grid on;
-\end{lstlisting}
+        %--- Forward path nodes ---
+        \node [oval, label=below:{$f(t)$}] (input) {1};
+        \node [sum,  right=1.0cm of input]  (sum1)  {};
+        \node [block, right=1.0cm of sum1, label=below:{$x$}] (int1) {$\dfrac{1}{s}$};
+        \node [gainR, right=1.0cm of int1] (gain4) {4};
+        \node [sum,  right=0.9cm of gain4] (sum2)  {};
+        \node [block, right=1.0cm of sum2] (int2)  {$\dfrac{1}{s}$};
+        \node [oval, label=below:{$y$}, right=1.0cm of int2] (output) {1};
+
+        %--- Sum labels ---
+        \node at ($(sum1.north)+(0.12,-0.20)$) {\tiny $+$};  % top
+        \node at ($(sum1.west)+(0.18, -0.05)$)  {\tiny $+$};   % left side
+        \node at ($(sum1.south)+(0.12,0.18)$) {\tiny $-$};   % bottom
+        \node at ($(sum2.west)+(0.18,0.12)$)  {\tiny $+$};   % left side
+        \node at ($(sum2.south)+(-0.05, 0.18)$) {\tiny $-$};   % bottom
+
+        %--- Feedback gain nodes ---
+        \node [gainL, above=1.2cm of gain4] (gain2) {2};
+        \node [gainL, below=1.2cm of int1]  (gain3) {3};
+        \node [gainL, below=1.2cm of int2]  (gain5) {5};
+
+        %--- Tap coordinates ---
+        \coordinate (tap1) at ($(int1.east)!0.5!(gain4.west)$);
+        \coordinate (tap2) at ($(int2.east)!0.5!(output.west)$);
+
+        %--- Forward connections ---
+        \draw [->] (input) -- (sum1);
+        \draw [->] (sum1)  -- (int1);
+        \draw [->] (int1)  -- (gain4);
+        \draw [->] (gain4) -- (sum2);
+        \draw [->] (sum2)  -- (int2);
+        \draw [->] (int2)  -- (output);
+
+        %--- Tap dots ---
+        \filldraw (tap1) circle (1.5pt);
+        \filldraw (tap2) circle (1.5pt);
+
+        %--- Upper feedback: tap2 -> gain2 -> sum1.north ---
+        \draw [->] (tap2) |- (gain2.east);
+        \draw [->] (gain2.west) -| (sum1.north);
+
+        %--- Lower-left feedback: tap1 -> gain3 -> sum1.south ---
+        \draw [->] (tap1) |- (gain3.east);
+        \draw [->] (gain3.west) -| (sum1.south);
+
+        %--- Lower-right feedback: tap2 -> gain5 -> sum2.south ---
+        \draw [->] (tap2) |- (gain5.east);
+        \draw [->] (gain5.west) -| (sum2.south);
+
+    \end{tikzpicture}
+    \caption{Simulink Block Diagram}
+\end{figure}
+
 
 %-----------------------------------
 \myproblem{Problem 8}
 Create a Simulink model to plot the solution for $0 \le t \le 6$:
 \[10\ddot{y} = 7\sin 4t + 5\cos 3t, \qquad y(0)=3,\;\dot{y}(0)=2\]
 
-\begin{lstlisting}
-% State: x(1) = y, x(2) = y_dot
-% y_ddot = (7*sin(4t) + 5*cos(3t)) / 10
-ode = @(t, x) [x(2);
-               (7*sin(4*t) + 5*cos(3*t)) / 10];
-[t, x] = ode45(ode, [0, 6], [3; 2]);
 
-plot(t, x(:,1), 'LineWidth', 1.5);
-title('Solution of 10\ddot{y} = 7sin4t + 5cos3t');
-xlabel('t'); ylabel('y(t)');
-grid on;
-\end{lstlisting}
 
 %-----------------------------------
 \myproblem{Problem 10}
