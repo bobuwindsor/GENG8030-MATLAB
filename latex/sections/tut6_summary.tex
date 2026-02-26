@@ -177,7 +177,48 @@ Draw a simulation diagram for the model:
 Create a Simulink model to plot the solution for $0 \le t \le 6$:
 \[10\ddot{y} = 7\sin 4t + 5\cos 3t, \qquad y(0)=3,\;\dot{y}(0)=2\]
 
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            waveblock/.style = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            block/.style     = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            outblock/.style  = {draw, rectangle, minimum height=0.8cm, minimum width=1.2cm, align=center},
+            sum/.style       = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+            gainR/.style     = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                                minimum height=1.0cm, shape border rotate=0, inner sep=2pt},
+        }
 
+        % Wave source blocks
+        \node [waveblock, label=below:{\small Sine Wave\newline Function}] (sine) {$\sim$};
+        \node [waveblock, below=1.2cm of sine, label=below:{\small Cosine Wave\newline Function}] (cosine) {$\sim$};
+
+        % Summing junction (vertically centered between sine and cosine)
+        \node [sum, right=1.0cm of sine, yshift=-0.7cm] (sum1) {};
+        \node at ($(sum1.north)+(0.12,-0.18)$) {\tiny $+$};
+        \node at ($(sum1.south)+(0.12, 0.18)$) {\tiny $+$};
+
+        % Forward path
+        \node [gainR, right=0.8cm of sum1] (gain) {$\frac{1}{10}$};
+        \node [block,  right=1.0cm of gain, label=below:{\small Integrator}]   (int1) {$\dfrac{1}{s}$};
+        \node [block,  right=1.0cm of int1, label=below:{\small Integrator 1}] (int2) {$\dfrac{1}{s}$};
+        \node [outblock, right=1.0cm of int2, label=below:{\small To Workspace}] (out) {\small simout};
+
+        % Connections: sine -> sum (from top)
+        \draw [->] (sine.east) -- ++(0.3,0) |- (sum1.north);
+
+        % Connections: cosine -> sum (from bottom)
+        \draw [->] (cosine.east) -- ++(0.3,0) |- (sum1.south);
+
+        % Forward path connections
+        \draw [->] (sum1)  -- (gain);
+        \draw [->] (gain)  -- (int1);
+        \draw [->] (int1)  -- (int2);
+        \draw [->] (int2)  -- (out);
+
+    \end{tikzpicture}
+    \caption{Simulink Block Diagram}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 10}
@@ -185,21 +226,7 @@ The equation $\dot{x} + x = \tan t$, $x(0) = 0$ has no analytical solution. The 
 \[x(t) = \tfrac{1}{3}t^3 - t^2 + 3t - 3 + 3\,e^{-t}\]
 Compare the numerical and approximate solutions.
 
-\begin{lstlisting}
-% Numerical: x_dot = tan(t) - x
-% Note: tan(t) diverges near t = pi/2 ~= 1.57; limit range
-ode = @(t, x) tan(t) - x;
-[t, x_num] = ode45(ode, [0, 1.4], 0);
 
-% Approximate solution
-x_approx = (1/3)*t.^3 - t.^2 + 3*t - 3 + 3*exp(-t);
-
-plot(t, x_num, 'b-', t, x_approx, 'r--', 'LineWidth', 1.5);
-legend('Numerical (ode45)', 'Approximate');
-title('Comparison: \dot{x} + x = tan t');
-xlabel('t'); ylabel('x(t)');
-grid on;
-\end{lstlisting}
 
 %-----------------------------------
 \myproblem{Problem 13}
