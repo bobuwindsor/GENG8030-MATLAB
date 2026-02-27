@@ -2,40 +2,245 @@
 % KEY SUMMARY — Tutorial 10 Concepts
 %===================================
 
-\section*{Key Concepts and Common Pitfalls (Tutorial 10 Summary)}
 
-\subsection*{1. Simulink vs.\ MATLAB ODE Solvers}
 
-Simulink provides a block-diagram environment for simulating dynamic systems. The same problems can be solved programmatically in MATLAB using \texttt{ode45}. Key equivalences:
+\section*{Simulink Problem-Solving and Manual Drawing Framework(Tutorial 10)}
 
-\begin{itemize}
-    \item \textbf{Integrator block} $\Leftrightarrow$ state variable (integrate $\dot{x}$ to get $x$)
-    \item \textbf{Gain block} $\Leftrightarrow$ scalar multiplication in the ODE function
-    \item \textbf{Sum block} $\Leftrightarrow$ addition inside the ODE function
-    \item \textbf{Fcn/Math block} $\Leftrightarrow$ nonlinear expression (e.g., \texttt{sin(x)}, \texttt{x\^{}3})
-\end{itemize}
+\vspace{0.5cm}
 
-\subsection*{2. Converting to State-Variable Form}
+%================================================================
+% 1. DIRECT INTEGRATION
+%================================================================
+\section*{1. The Direct Integration Framework (For Standard ODEs)}
+\textbf{Applies to:} Problems 3, 5, 8, 33
 
-Every $n$th-order ODE must be reduced to $n$ first-order equations before using \texttt{ode45}:
+This framework is used when you are dealing with standard, time-domain differential equations containing $\dot{y}$ or $\ddot{y}$.
+
+\subsection*{Problem-Solving Steps}
 \begin{enumerate}
-    \item Solve for the highest derivative.
-    \item Let $x_1 = y,\; x_2 = \dot{y},\; \ldots,\; x_n = y^{(n-1)}$.
-    \item Write $\dot{x}_1 = x_2,\; \dot{x}_2 = x_3,\; \ldots,\; \dot{x}_n = (\text{expression from step 1})$.
+    \item \textbf{Isolate the highest derivative:} Algebraically rearrange the equation so the highest derivative is alone on the left side of the equals sign. For example, in Problem 8, $10\ddot{y} = 7\sin(4t) + 5\cos(3t)$ would become $\ddot{y} = \frac{1}{10}(7\sin(4t) + 5\cos(3t))$.
+    \item \textbf{Chain your Integrators:} For a second-order equation ($\ddot{y}$), place two Integrator ($\frac{1}{s}$) blocks in series.
+    \item \textbf{Build the feedback loops:} Tap the output signals ($y$ or $\dot{y}$) and route them backward through Gain blocks (triangles) to construct the rest of the equation.
+    \item \textbf{Sum it up:} Feed the inputs and the feedback loops into a Sum block ($+$/$-$), and connect the Sum block's output directly into your first Integrator.
 \end{enumerate}
 
-\subsection*{3. Transfer Function Approach (Linear Systems)}
-
-For linear systems with zero initial conditions, use the Control System Toolbox:
+\subsection*{Manual Drawing Guidelines}
+\textbf{Shapes to Draw:}
 \begin{itemize}
-    \item \texttt{tf(num, den)}: create a transfer function from coefficient vectors
-    \item \texttt{lsim(sys, u, t)}: simulate response to an arbitrary input vector
-    \item \texttt{series(sys1, sys2)}: cascade two transfer functions
+    \item \textbf{Integrators:} Draw a square and write $\frac{1}{s}$ inside it.
+    \item \textbf{Gains (Multipliers):} Draw a triangle pointing to the right. Write the constant multiplier (e.g., $5$ or $\frac{1}{3}$) inside it.
+    \item \textbf{Sum Junctions:} Draw a circle. Write small $+$ and $-$ signs inside the circle next to where the arrows will enter to show addition or subtraction.
+    \item \textbf{Math Functions:} Draw a square and write the function name inside (e.g., $\sin$, $\cos$, $\tan$).
 \end{itemize}
 
-\subsection*{4. Nonlinear Systems}
+\textbf{How to Draw the Process (Example: $3\dot{y} + 5\sin y = f(t)$):}
+\begin{itemize}
+    \item \textbf{Isolate:} Mentally rearrange to $\dot{y} = \frac{1}{3}(f(t) - 5\sin y)$.
+    \item \textbf{The Spine:} Draw an Integrator ($\frac{1}{s}$) in the middle of the page. Draw an arrow exiting the right side and label the line $y(t)$.
+    \item \textbf{The Feedback:} Tap the $y(t)$ line, draw an arrow looping back to the left, and pass it through a square labeled $\sin$, then through a triangle labeled $5$.
+    \item \textbf{The Summation:} Draw a circle (Sum junction) to the left of the Integrator. Draw an arrow from your input $f(t)$ into a $+$ port. Bring the arrow from your $5$ triangle into a $-$ port.
+    \item \textbf{The Final Gain:} Draw an arrow from the Sum circle through a triangle labeled $\frac{1}{3}$, and plug that arrow into the Integrator.
+\end{itemize}
 
-Nonlinear elements (e.g., $\sin x$, $x^3$, saturation) require \texttt{ode45} because the Control System Toolbox only supports LTI systems. Use \texttt{min}/\texttt{max} to implement Saturation blocks.
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=Stealth]
+        
+        % Define standard block styles
+        \tikzset{
+            block/.style = {draw, rectangle, minimum height=1cm, minimum width=1.2cm, align=center, fill=blue!5},
+            sum/.style = {draw, circle, minimum size=0.8cm, inner sep=0pt, fill=blue!5},
+            gain/.style = {draw, regular polygon, regular polygon sides=3, shape border rotate=-90, minimum width=1cm, inner sep=0pt, fill=blue!5},
+            gainleft/.style = {draw, regular polygon, regular polygon sides=3, shape border rotate=90, minimum width=1cm, inner sep=0pt, fill=blue!5},
+            panel/.style = {draw, rectangle, rounded corners, minimum width=14.5cm, fill=gray!5, dashed} 
+        }
+
+        %=========================================
+        % STEP 1: ISOLATE
+        %=========================================
+        % Centered at y=0, height 2.5cm
+        \node [panel, minimum height=2.5cm] (p1) at (0,0) {};
+        \node [anchor=north west, font=\bfseries] at (p1.north west) {Step 1: Isolate the highest derivative};
+        
+        \node [anchor=center, font=\Large] at (p1.center) {
+            $m\ddot{y} + c\dot{y} + ky = f(t) \quad \Rightarrow \quad \ddot{y} = \frac{1}{m} \big[ f(t) - c\dot{y} - ky \big]$
+        };
+
+        %=========================================
+        % STEP 2: CHAIN INTEGRATORS
+        %=========================================
+        % Centered at y=-4, height 2.5cm
+        \node [panel, minimum height=2.5cm] (p2) at (0,-4) {};
+        \node [anchor=north west, font=\bfseries] at (p2.north west) {Step 2: Chain your Integrators};
+        
+        \node [block] (int1_s2) at (-1.5, -4.2) {$\frac{1}{s}$};
+        \node [block] (int2_s2) at (1.5, -4.2) {$\frac{1}{s}$};
+        
+        \draw [->, thick] (-3.5, -4.2) -- node[above] {$\ddot{y}$} (int1_s2);
+        \draw [->, thick] (int1_s2) -- node[above] {$\dot{y}$} (int2_s2);
+        \draw [->, thick] (int2_s2) -- node[above] {$y$} (3.5, -4.2);
+
+        %=========================================
+        % STEP 3: BUILD FEEDBACK
+        %=========================================
+        % Centered at y=-9.25, height 4.5cm to accommodate the loop
+        \node [panel, minimum height=4.5cm] (p3) at (0, -9.25) {};
+        \node [anchor=north west, font=\bfseries] at (p3.north west) {Step 3: Build the feedback loops (Tap and Gain)};
+        
+        \node [block] (int1_s3) at (-1.5, -8.5) {$\frac{1}{s}$};
+        \node [block] (int2_s3) at (1.5, -8.5) {$\frac{1}{s}$};
+        \node [gainleft] (gainC) at (-0.5, -10.2) {$c$};
+        \node [gainleft] (gainK) at (1, -10.2) {$k$};
+        
+        \draw [->, thick] (-3.5, -8.5) -- node[above] {$\ddot{y}$} (int1_s3);
+        \draw [->, thick] (int1_s3) -- node[above] {$\dot{y}$} (int2_s3);
+        \draw [->, thick] (int2_s3) -- node[above] {$y$} (3.5, -8.5);
+        
+        % Taps
+        \filldraw (0, -8.5) circle (2pt);
+        \draw [->, thick] (0, -8.5) |- (gainC.east);
+        
+        \filldraw (2.8, -8.5) circle (2pt);
+        \draw [->, thick] (2.8, -8.5) |- (gainK.east);
+
+        %=========================================
+        % STEP 4: SUM IT UP
+        %=========================================
+        % Centered at y=-15.5, height 6cm to accommodate double loops and Sum junction
+        \node [panel, minimum height=6cm] (p4) at (0, -15.5) {};
+        \node [anchor=north west, font=\bfseries] at (p4.north west) {Step 4: Sum it up (Combine and plug into the front)};
+        
+        \node [sum] (sum_s4) at (-4.5, -14) {};
+        \node [font=\tiny] at ($(sum_s4.west)+(0.15,0.1)$) {$+$};
+        \node [font=\tiny] at ($(sum_s4.south)+(0.1,0.15)$) {$-$};
+        \node [font=\tiny] at ($(sum_s4.south east)+(-0.05,0.25)$) {$-$};
+        
+        \node [gain] (gainM) at (-2.5, -14) {1/m};
+        \node [block] (int1_s4) at (0, -14) {$\frac{1}{s}$};
+        \node [block] (int2_s4) at (3, -14) {$\frac{1}{s}$};
+        
+        \node [gainleft] (gainC4) at (0, -15.8) {$c$};
+        \node [gainleft] (gainK4) at (1.5, -17.2) {$k$};
+        
+        % Forward Path
+        \draw [->, thick] (-6.5, -14) node[left] {$f(t)$} -- (sum_s4);
+        \draw [->, thick] (sum_s4) -- (gainM);
+        \draw [->, thick] (gainM) -- node[above] {$\ddot{y}$} (int1_s4);
+        \draw [->, thick] (int1_s4) -- node[above] {$\dot{y}$} (int2_s4);
+        \draw [->, thick] (int2_s4) -- node[above] {$y$} (5, -14);
+        
+        % Feedback Paths
+        \filldraw (1.5, -14) circle (2pt);
+        \draw [->, thick] (1.5, -14) |- (gainC4.east);
+        \draw [->, thick] (gainC4.west) -| (sum_s4.south);
+        
+        \filldraw (4.2, -14) circle (2pt);
+        \draw [->, thick] (4.2, -14) |- (gainK4.east);
+        \draw [->, thick] (gainK4.west) -| ($(sum_s4.south east)+(-0.15,-0.15)$);
+
+    \end{tikzpicture}
+    \caption{The 4-Step Direct Integration Framework}
+\end{figure}
+
+
+\vspace{0.5cm}
+
+%================================================================
+% 2. TRANSFER FUNCTIONS
+%================================================================
+\section*{2. The Transfer Function Framework (For LTI Systems)}
+\textbf{Applies to:} Problems 25, 28
+
+This framework is used for Linear Time-Invariant (LTI) systems, specifically when initial conditions are zero.
+
+\subsection*{Problem-Solving Steps}
+\begin{enumerate}
+    \item \textbf{Convert to Laplace:} Take the Laplace transform of the differential equations, assuming zero initial conditions.
+    \item \textbf{Define Polynomials:} Structure the equation into a ratio of polynomials ($\frac{\text{Numerator}}{\text{Denominator}}$) to find the transfer function, such as $\frac{X(s)}{F(s)} = \frac{1}{3s^2+15s+18}$.
+    \item \textbf{Block Setup:} Use the Transfer Fcn block. You must input the coefficients of the $s$-polynomials into the block parameters in descending order.
+    \item \textbf{Connect Input/Output:} Connect your input source (e.g., a Step block) to the front. If you have a cascaded system like Problem 25, you chain the Transfer Function blocks together.
+\end{enumerate}
+
+\subsection*{Manual Drawing Guidelines}
+\textbf{Shapes to Draw:}
+\begin{itemize}
+    \item \textbf{Transfer Function:} Draw a wide rectangle. Inside, draw a horizontal line and write the numerator on top and the denominator on the bottom (e.g., $\frac{1}{3s^2+15s+18}$).
+    \item \textbf{Multiplexer (Mux):} If you need to output two signals to the same scope, draw a thick, solid black vertical line.
+    \item \textbf{Inputs/Outputs:} Draw squares labeled ``Step'' or ``Ramp'' for inputs, and ``Scope'' or ``simout'' for outputs.
+\end{itemize}
+
+\textbf{How to Draw the Process:}
+\begin{itemize}
+    \item Draw the input block on the far left (e.g., a ``Step'' block).
+    \item Draw your wide Transfer Function rectangle(s) in the middle.
+    \item Draw standard straight arrows connecting them from left to right.
+\end{itemize}
+
+\vspace{0.5cm}
+% 
+%================================================================
+% 3. STATE-SPACE
+%================================================================
+\section*{3. The State-Space Framework (For Coupled First-Order ODEs)}
+\textbf{Applies to:} Problems 13, 15, 45a
+
+This approach is required when the system is given as a system of coupled first-order differential equations, or when specifically asked to use state-variable representation.
+
+\subsection*{Problem-Solving Steps}
+\begin{enumerate}
+    \item \textbf{Formulate the Matrices:} You must extract the coefficients from your equations to build the four standard state-space matrices: $A$ (system matrix), $B$ (input matrix), $C$ (output matrix), and $D$ (feedthrough matrix) to fit the $\dot{x} = Ax + Bu$ and $y = Cx + Du$ format.
+    \item \textbf{The State-Space Block:} Drop a single State-Space block into your model. Double-click it and input your $A$, $B$, $C$, and $D$ matrices into the parameters.
+    \item \textbf{Define Initial Conditions:} Set the initial state vector directly inside the State-Space block parameters.
+\end{enumerate}
+
+\subsection*{Manual Drawing Guidelines}
+\textbf{Shapes to Draw:}
+\begin{itemize}
+    \item \textbf{State-Space Block:} Draw one large, wide rectangle. Inside, write the two standard equations: $x' = Ax + Bu$ on the top line, and $y = Cx + Du$ on the bottom line.
+\end{itemize}
+
+\textbf{How to Draw the Process:}
+\begin{itemize}
+    \item Do not draw individual integrators or gains. The entire system is encapsulated in that single block.
+    \item Draw your input source block on the left (e.g., ``Ramp'') and connect it to the left side of the State-Space block.
+    \item Draw an arrow from the right side of the State-Space block to an output block (e.g., ``simout'').
+    \item \textit{(Tip for the quiz: Write out the actual $A, B, C, D$ matrices next to the diagram to show the professor you know exactly what is happening inside the block.)}
+\end{itemize}
+
+\vspace{0.5cm}
+
+%================================================================
+% 4. NONLINEAR & PIECEWISE
+%================================================================
+\section*{4. The Nonlinear \& Piecewise Framework (For Complex Behaviors)}
+\textbf{Applies to:} Problems 10, 18, 35, 45b
+
+Standard linear blocks cannot handle bounded conditions, piecewise inputs, or arbitrary math functions.
+
+\subsection*{Problem-Solving Steps}
+\begin{itemize}
+    \item \textbf{For Bounded Limits (Problem 18):} When a signal is capped at specific maximum or minimum values, you must route the signal through a Saturation block. This acts as a physical limit (using min/max parameters).
+    \item \textbf{For Custom Equations (Problem 35):} When dealing with complex nonlinear equations (like $h^2$ or $\sqrt{h}$), use the generalized Fcn block. You can type specific mathematical expressions directly into this block's parameters as $f(u)$.
+    \item \textbf{For Piecewise Inputs (Problem 45b):} When an input changes behavior over time (e.g., $f(t) = t$ then $2-t$ then $0$), you construct the waveform by summing multiple Ramp or Step blocks together. By configuring the start times and slopes of Ramp 1, Ramp 2, etc., and feeding them all into a single Sum block, you can synthesize the piecewise shape.
+\end{itemize}
+
+\subsection*{Manual Drawing Guidelines}
+\textbf{Shapes to Draw:}
+\begin{itemize}
+    \item \textbf{Fcn Block:} Draw a square and write $f(u)$ inside. This represents custom user-defined math.
+    \item \textbf{Saturation Block:} Draw a square and draw a little line graph inside that slants up and then flatlines horizontally (representing a cap/limit).
+    \item \textbf{Piecewise Inputs:} Draw multiple input blocks (like Ramps) stacked vertically.
+\end{itemize}
+
+\textbf{How to Draw the Process (Example: Piecewise Input):}
+\begin{itemize}
+    \item If the input changes at different times (e.g., $t=0, t=1, t=2$), draw three separate ``Ramp'' blocks stacked on the left side of your paper.
+    \item Draw a large Sum circle.
+    \item Route the arrows from all three Ramp blocks into the $+$ or $-$ ports of that single Sum circle to combine them into one master $f(t)$ signal.
+    \item Route the output of the Sum circle into your main system (like a State-Space block).
+\end{itemize}
+
+
 
 \vspace{1cm}
 \hrule
@@ -48,7 +253,7 @@ Nonlinear elements (e.g., $\sin x$, $x^3$, saturation) require \texttt{ode45} be
 Draw a simulation diagram for the equation:
 \[3\dot{y} + 5\sin y = f(t)\]
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
         \tikzset{
