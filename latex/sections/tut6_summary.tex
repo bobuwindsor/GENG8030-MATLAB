@@ -226,6 +226,87 @@ The equation $\dot{x} + x = \tan t$, $x(0) = 0$ has no analytical solution. The 
 \[x(t) = \tfrac{1}{3}t^3 - t^2 + 3t - 3 + 3\,e^{-t}\]
 Compare the numerical and approximate solutions.
 
+\begin{figure}[h!]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth]
+        
+        % --- Define Block Styles ---
+        \tikzset{
+            block/.style = {draw, rectangle, minimum height=0.9cm, minimum width=1.2cm, align=center},
+            sum/.style = {draw, circle, minimum size=0.6cm, inner sep=0pt},
+            % Regular polygon ensures the triangle strictly points right across all TikZ versions
+            gain/.style = {draw, regular polygon, regular polygon sides=3, shape border rotate=-90, minimum width=1.0cm, inner sep=0pt},
+            scope/.style = {draw, rectangle, minimum height=1.4cm, minimum width=1.2cm, fill=white}
+        }
+
+        % --- Top Row (Differential Equation Path) ---
+        % Clock Icon
+        \node [draw, circle, minimum size=0.6cm, inner sep=0pt] (clk) at (0,0) {};
+        \draw (clk.center) -- ++(0,0.18) (clk.center) -- ++(0.18,0);
+        
+        \node [block] (tan) at (2,0) {tan};
+        \node [sum] (sum1) at (3.5,0) {};
+        \node [font=\tiny] at ($(sum1.west)+(0.15,0.1)$) {$+$};
+        \node [font=\tiny] at ($(sum1.south)+(0.1,0.15)$) {$-$};
+        
+        \node [block] (int1) at (5.5,0) {$\frac{1}{s}$};
+
+        % --- Middle Row (Polynomial Approximate Path) ---
+        \node [block, align=center] (poly) at (3,-2) {\small $P(u)$ \\[-0.5ex] \small $O(P)=3$};
+        \node [sum] (sum2) at (7,-2) {};
+        \node [font=\tiny] at ($(sum2.west)+(0.15,0.1)$) {$+$};
+        \node [font=\tiny] at ($(sum2.south)+(0.1,0.15)$) {$+$};
+
+        % --- Bottom Row (Exponential Approximate Path) ---
+        \node [gain] (gainNeg) at (2.5,-4) {-1};
+        \node [block] (expu) at (4.5,-4) {$e^u$};
+        \node [gain] (gain3) at (6.5,-4) {3};
+
+        % --- Scope Component ---
+        \node [scope] (scope) at (9,-1) {};
+        % Inner screen rectangle
+        \node [draw, rectangle, minimum height=0.8cm, minimum width=0.8cm] at (scope.center) {};
+        % Define exact input ports
+        \coordinate (scopeTop) at ($(scope.west) + (0, 0.3)$);
+        \coordinate (scopeBot) at ($(scope.west) + (0, -0.3)$);
+
+        % --- Connections ---
+        % Signal tap from clock
+        \coordinate (tapA) at (1,0);
+        \draw [-] (clk.east) -- (tapA);
+        \filldraw (tapA) circle (1.5pt);
+        
+        % Top Row Forward Wiring
+        \draw [->] (tapA) -- (tan.west);
+        \draw [->] (tan.east) -- (sum1.west);
+        \draw [->] (sum1.east) -- (int1.west);
+        
+        % Signal tap after Integrator
+        \coordinate (tapB) at (7,0);
+        \draw [-] (int1.east) -- (tapB);
+        \filldraw (tapB) circle (1.5pt);
+        \draw [->] (tapB) |- (scopeTop); % Connect to Scope Top Port
+        
+        % Feedback Loop for Top Row
+        % Routes down to y=-1, left to sum1's x-coordinate, then up
+        \draw [->] (tapB) -- ++(0,-1) -| (sum1.south);
+        
+        % Middle Row Wiring
+        \draw [->] (tapA) |- (poly.west);
+        \draw [->] (poly.east) -- (sum2.west);
+        \draw [->] (sum2.east) |- (scopeBot); % Connect to Scope Bottom Port
+        
+        % Bottom Row Wiring
+        \draw [->] (tapA) |- (gainNeg.west);
+        \draw [->] (gainNeg.east) -- (expu.west);
+        \draw [->] (expu.east) -- (gain3.west);
+        \draw [->] (gain3.east) -| (sum2.south); % Connects up into Sum2
+        
+    \end{tikzpicture}
+    }
+    \caption{Simulink Block Diagram: True Solution vs Approximate Solution}
+\end{figure}
 
 
 %-----------------------------------
@@ -237,19 +318,39 @@ Construct a Simulink model to plot solutions for $0 \le t \le 2$:
 \end{align*}
 where $f(t) = 3t$. Use the Ramp block in the Sources library.
 
-\begin{lstlisting}
-% State: s(1) = x1, s(2) = x2
-% f(t) = 3t (ramp with slope 3)
-f = @(t) 3*t;
-ode = @(t, s) [-6*s(1) + 4*s(2);
-                5*s(1) - 7*s(2) + f(t)];
-[t, sol] = ode45(ode, [0, 2], [0; 0]);
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1.5cm]
+        
+        % --- Define Block Styles ---
+        \tikzset{
+            rampbox/.style = {draw, rectangle, minimum height=1.4cm, minimum width=1.4cm, fill=gray!10},
+            ssblock/.style = {draw, rectangle, minimum height=1.4cm, minimum width=3cm, align=center, fill=gray!10},
+            outblock/.style = {draw, rectangle, minimum height=1.4cm, minimum width=2.5cm, align=center, fill=gray!10}
+        }
 
-plot(t, sol(:,1), '-', t, sol(:,2), '--', 'LineWidth', 1.5);
-legend('x_1(t)', 'x_2(t)');
-title('State Response with Ramp Input f(t) = 3t');
-xlabel('t'); grid on;
-\end{lstlisting}
+        % --- Nodes ---
+        % 1. Ramp Block
+        \node [rampbox] (ramp) {};
+        % Draw the ramp symbol inside the block
+        \draw [thick] ($(ramp.south west) + (0.2, 0.2)$) -- ($(ramp.south west) + (0.5, 0.2)$) -- ($(ramp.north east) + (-0.2, -0.2)$);
+        
+        % 2. State-Space Block
+        \node [ssblock, right=of ramp] (ss) {
+            \small $x' = Ax + Bu$ \\
+            \small $y = Cx + Du$
+        };
+        
+        % 3. Workspace / Simout Block
+        \node [outblock, right=of ss] (simout) {simout};
+
+        % --- Connections ---
+        \draw [->] (ramp.east) -- (ss.west);
+        \draw [->] (ss.east) -- (simout.west);
+
+    \end{tikzpicture}
+    \caption{Simulink State-Space Model for Problem 13}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 15}
@@ -257,40 +358,144 @@ Construct a Simulink model to plot solutions for $0 \le t \le 10$:
 \[\dot{x} = -5x + 3y + 5\sin 2t,\quad x(0)=0\]
 \[\dot{y} = 3x - 4y,\quad y(0)=0\]
 
-\begin{lstlisting}
-% State: s(1) = x, s(2) = y
-ode = @(t, s) [-5*s(1) + 3*s(2) + 5*sin(2*t);
-                3*s(1) - 4*s(2)];
-[t, sol] = ode45(ode, [0, 10], [0; 0]);
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            block/.style  = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            scope/.style  = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            wave/.style   = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            sum/.style    = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+            gainR/.style  = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                             minimum height=0.9cm, shape border rotate=0, inner sep=2pt},
+            gainL/.style  = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                             minimum height=0.9cm, shape border rotate=180, inner sep=2pt},
+        }
 
-plot(t, sol(:,1), '-', t, sol(:,2), '--', 'LineWidth', 1.5);
-legend('x(t)', 'y(t)');
-title('State Response with Sinusoidal Forcing');
-xlabel('t'); grid on;
-\end{lstlisting}
+        %--- FORWARD PATH ---
+        \node [wave]  (sine)  {$\sim$};
+        \node [sum,   right=1.0cm of sine]   (sum1)   {};
+        \node [block, right=1.0cm of sum1, label=below:{$x$}] (int1) {$\dfrac{1}{s}$};
+        \node [gainR, right=1.0cm of int1]   (gain3f) {3};
+        \node [sum,   right=0.9cm of gain3f] (sum2)   {};
+        \node [block, right=1.0cm of sum2]   (int2)   {$\dfrac{1}{s}$};
+        \node [scope, right=1.2cm of int2]   (scope)  {$\square$};
+
+        %--- Sum1 labels: + left, - top, + bottom ---
+        \node at ($(sum1.west)+(0.18, 0.08)$)  {\tiny $+$};
+        \node at ($(sum1.north)+(0.10,-0.18)$) {\tiny $-$};
+        \node at ($(sum1.south)+(0.10, 0.18)$) {\tiny $+$};
+
+        %--- Sum2 labels: + left, - bottom ---
+        \node at ($(sum2.west)+(0.18, 0.08)$)  {\tiny $+$};
+        \node at ($(sum2.south)+(0.10, 0.18)$) {\tiny $-$};
+
+        %--- FEEDBACK NODES ---
+        \node [gainL, above=1.4cm of gain3f] (gain3b) {3};   % top feedback
+        \node [gainL, below=1.4cm of int1]   (gain5)  {5};   % bottom-left feedback
+        \node [gainL, below=1.4cm of int2]   (gain4)  {4};   % bottom-right feedback
+
+        %--- TAP COORDINATES ---
+        \coordinate (tap1) at ($(int1.east)!0.5!(gain3f.west)$);
+        \coordinate (tap2) at ($(int2.east)!0.5!(scope.west)$);
+
+        %--- FORWARD CONNECTIONS ---
+        \draw [->] (sine)   -- (sum1);
+        \draw [->] (sum1)   -- (int1);
+        \draw [->] (int1)   -- (gain3f);
+        \draw [->] (gain3f) -- (sum2);
+        \draw [->] (sum2)   -- (int2);
+        \draw [->] (int2)   -- (scope);
+
+        %--- TAP DOTS ---
+        \filldraw (tap1) circle (1.5pt);
+        \filldraw (tap2) circle (1.5pt);
+
+        %--- TOP FEEDBACK: tap2 -> gain3b -> sum1.north ---
+        \draw [->] (tap2) |- (gain3b.east);
+        \draw [->] (gain3b.west) -| (sum1.north);
+
+        %--- BOTTOM-LEFT FEEDBACK: tap1 -> gain5 -> sum1.south ---
+        \draw [->] (tap1) |- (gain5.east);
+        \draw [->] (gain5.west) -| (sum1.south);
+
+        %--- BOTTOM-RIGHT FEEDBACK: tap2 -> gain4 -> sum2.south ---
+        \draw [->] (tap2) |- (gain4.east);
+        \draw [->] (gain4.west) -| (sum2.south);
+
+    \end{tikzpicture}
+    }
+    \caption{Simulink Block Diagram}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 18}
 Construct a Simulink model for $5\dot{x} + \sin x = f(t)$, $x(0) = 0$, where $g(t) = 10\sin 4t$ and:
 \[f(t) = \begin{cases} -5 & \text{if } g(t) \le -5 \\ g(t) & \text{if } -5 < g(t) < 5 \\ 5 & \text{if } g(t) \ge 5 \end{cases}\]
 
-\begin{lstlisting}
-% Saturation: clip g(t) to [-5, 5]
-g = @(t) 10 * sin(4*t);
-f = @(t) min(5, max(-5, g(t)));
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            block/.style   = {draw, rectangle, minimum height=1.1cm, minimum width=1.1cm, align=center},
+            outblock/.style= {draw, rectangle, minimum height=1.0cm, minimum width=1.4cm, align=center},
+            sum/.style     = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+            gainR/.style   = {draw, isosceles triangle, isosceles triangle apex angle=60,
+                              minimum height=1.0cm, shape border rotate=0, inner sep=2pt},
+        }
 
-% ODE: x_dot = (f(t) - sin(x)) / 5
-ode = @(t, x) (f(t) - sin(x)) / 5;
-[t, x] = ode45(ode, [0, 5], 0);
+        % Sine Wave block
+        \node [block, label=below:{\small Sine Wave\newline Function}] (sine) {%
+            \begin{tikzpicture}[scale=0.22]
+                \draw [thick] plot[domain=-pi:pi, samples=40] (\x, {sin(\x r)});
+            \end{tikzpicture}
+        };
 
-figure;
-subplot(2,1,1);
-plot(t, f(t)); title('Forcing f(t) [Saturated]');
-xlabel('t'); ylabel('f(t)'); grid on;
-subplot(2,1,2);
-plot(t, x); title('Response x(t)');
-xlabel('t'); ylabel('x(t)'); grid on;
-\end{lstlisting}
+        % Saturation block (S-curve)
+        \node [block, right=1.0cm of sine, label=below:{\small Saturation}] (sat) {%
+            \begin{tikzpicture}[scale=0.22]
+                \draw [thick] plot[domain=-pi:pi, samples=40] (\x, {min(1,max(-1, \x*0.7))});
+            \end{tikzpicture}
+        };
+
+        % Summing junction
+        \node [sum, right=1.0cm of sat] (sum1) {};
+        \node at ($(sum1.west)+(0.18, 0.08)$)  {\tiny $+$};
+        \node at ($(sum1.south)+(0.10, 0.18)$) {\tiny $-$};
+
+        % Gain block
+        \node [gainR, right=0.8cm of sum1, label=below:{\small Gain}] (gain) {$\frac{1}{5}$};
+
+        % Integrator block
+        \node [block, right=1.0cm of gain, label=below:{\small Integrator}] (int1) {$\dfrac{1}{s}$};
+
+        % To Workspace
+        \node [outblock, right=1.2cm of int1, label=below:{\small To Workspace}] (ws) {\small simout};
+
+        % Trigonometric Function block (feedback, below)
+        \node [block, below=1.4cm of gain, label=below:{\small Trigonometric\newline Function}] (trig) {\small sin};
+
+        % Tap between int1 and ws
+        \coordinate (tap) at ($(int1.east)!0.5!(ws.west)$);
+        \filldraw (tap) circle (1.5pt);
+
+        % Forward connections
+        \draw [->] (sine)  -- (sat);
+        \draw [->] (sat)   -- (sum1);
+        \draw [->] (sum1)  -- (gain);
+        \draw [->] (gain)  -- (int1);
+        \draw [->] (int1)  -- (ws);
+
+        % Feedback: tap -> trig -> sum1.south
+        \draw [->] (tap) |- (trig.east);
+        \draw [->] (trig.west) -| (sum1.south);
+
+    \end{tikzpicture}
+    }
+    \caption{Simulink Block Diagram}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 25}
@@ -299,48 +504,137 @@ Use Transfer Function blocks to plot solutions for $0 \le t \le 2$:
 \[2\ddot{y} + 16\dot{y} + 50y = x(t),\quad y(0)=\dot{y}(0)=0\]
 where $f(t) = 75\,u_s(t)$.
 
-\begin{lstlisting}
-% X(s)/F(s) = 1 / (3s^2 + 15s + 18)
-% Y(s)/X(s) = 1 / (2s^2 + 16s + 50)
-sys_x = tf(1, [3, 15, 18]);
-sys_y = tf(1, [2, 16, 50]);
+\textbf{Problem 25}
 
-% Step input: f(t) = 75 * us(t)
-t = 0:0.005:2;
-f_input = 75 * ones(size(t));
+Use Transfer Function blocks to plot solutions for $0 \leq t \leq 2$:
+\begin{align*}
+    3\ddot{x} + 15\dot{x} + 18x &= f(t), \quad x(0) = \dot{x}(0) = 0 \\
+    2\ddot{y} + 16\dot{y} + 50y &= x(t), \quad y(0) = \dot{y}(0) = 0
+\end{align*}
+where $f(t) = 75\,u_s(t)$.
 
-x_out = lsim(sys_x, f_input, t);
-y_out = lsim(series(sys_x, sys_y), f_input, t);
+\textbf{Solution:} Taking the Laplace transform with zero initial conditions:
+\begin{align*}
+    X(s) &= \frac{1}{3s^2+15s+18} \cdot F(s) \\
+    Y(s) &= \frac{1}{2s^2+16s+50} \cdot X(s)
+\end{align*}
+The input $f(t) = 75\,u_s(t)$ is a unit step scaled by 75. Connect a Step block
+(amplitude $= 75$) into Transfer Fcn1, whose output feeds Transfer Fcn. Both $x(t)$
+and $y(t)$ are collected via a Mux into the \texttt{simout} To~Workspace block.
 
-figure;
-subplot(2,1,1);
-plot(t, x_out, 'LineWidth', 1.5);
-title('x(t)'); xlabel('t'); grid on;
-subplot(2,1,2);
-plot(t, y_out, 'LineWidth', 1.5);
-title('y(t)'); xlabel('t'); grid on;
-\end{lstlisting}
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.4cm]
+        \tikzset{
+            stepblock/.style = {draw, rectangle, minimum height=1.1cm, minimum width=1.1cm, align=center},
+            tfblock/.style   = {draw, rectangle, minimum height=1.2cm, minimum width=2.6cm, align=center},
+            muxblock/.style  = {draw, rectangle, minimum height=1.4cm, minimum width=0.3cm,
+                                align=center, fill=black},
+            outblock/.style  = {draw, rectangle, minimum height=1.0cm, minimum width=1.4cm, align=center},
+        }
+
+        % Step block (amplitude = 75)
+        \node [stepblock, label=below:{\small Step}] (step) {%
+            \begin{tikzpicture}[scale=0.25]
+                \draw [thick] (-1,-1) -- (-1,0) -- (0,0) -- (0,1) -- (1,1);
+                \draw [dashed, thin] (-1,0) -- (1,0);
+            \end{tikzpicture}
+        };
+        \node [below=0.05cm of step, yshift=0.4cm] {\tiny amp $= 75$};
+
+        % Transfer Fcn 1
+        \node [tfblock, right=1.2cm of step, label=below:{\small Transfer Fcn1}] (tf1) {%
+            $\dfrac{1}{3s^2+15s+18}$
+        };
+
+        % Transfer Fcn 2
+        \node [tfblock, right=1.4cm of tf1, label=below:{\small Transfer Fcn}] (tf2) {%
+            $\dfrac{1}{2s^2+16s+50}$
+        };
+
+        % Mux block (solid black bar)
+        \node [muxblock, right=1.4cm of tf2] (mux) {};
+
+        % To Workspace
+        \node [outblock, right=0.8cm of mux, label=below:{\small To Workspace}] (ws) {\small simout};
+
+        % Tap coordinates
+        \coordinate (tapX) at ($(tf1.east)!0.5!(tf2.west)$);
+        \coordinate (tapY) at ($(tf2.east)!0.5!(mux.west)$);
+        \filldraw (tapX) circle (1.5pt);
+        \filldraw (tapY) circle (1.5pt);
+
+        % Forward connections
+        \draw [->] (step) -- (tf1);
+        \draw [->] (tf1)  -- (tf2);
+        \draw [->] (tf2.east) -- (mux.west);
+        \draw [->] (mux)  -- (ws);
+
+        % x(t) tap -> mux bottom input
+        \draw [->] (tapX) -- ++(0,-1.6) -| (mux.south);
+
+        % Wire labels
+        \node [above, font=\small] at (tapX) {$x(t)$};
+        \node [above, font=\small] at (tapY) {$y(t)$};
+
+    \end{tikzpicture}
+    }
+    \caption{Simulink model for Problem 25}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 28}
 Create a Simulink model to plot the solution for $0 \le t \le 1$:
 \[\frac{Y(s)}{F(s)} = \frac{4}{s+5}, \qquad f(t) = u_s(t) - u_s(t-1)\]
 
-\begin{lstlisting}
-sys = tf(4, [1, 5]);
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            stepblock/.style = {draw, rectangle, minimum height=1.1cm, minimum width=1.1cm, align=center},
+            tfblock/.style   = {draw, rectangle, minimum height=1.1cm, minimum width=1.8cm, align=center},
+            scope/.style     = {draw, rectangle, minimum height=1.1cm, minimum width=1.1cm, align=center},
+            sum/.style       = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+        }
 
-% Pulse input: f(t) = us(t) - us(t-1)
-% Over [0,1]: f(t) = 1 for t < 1, drops to 0 at t = 1
-t = 0:0.001:1;
-f_input = double(t < 1);
+        % Step blocks with internal step-function shape
+        \node [stepblock, label=above left:{\small set start\newline time to 0}] (step1) {%
+            \begin{tikzpicture}[scale=0.25]
+                \draw [thick] (-1,-1) -- (-1, 0) -- (0, 0) -- (0, 1) -- (1, 1);
+                \draw [dashed, thin] (-1, 0) -- (1, 0);
+            \end{tikzpicture}
+        };
 
-y_out = lsim(sys, f_input, t);
+        \node [stepblock, below=1.4cm of step1,
+               label=below left:{\small set start\newline time to 1}] (step2) {%
+            \begin{tikzpicture}[scale=0.25]
+                \draw [thick] (-1,-1) -- (-1, 0) -- (0, 0) -- (0, 1) -- (1, 1);
+                \draw [dashed, thin] (-1, 0) -- (1, 0);
+            \end{tikzpicture}
+        };
 
-plot(t, y_out, 'b-', t, f_input, 'r--', 'LineWidth', 1.5);
-legend('y(t)', 'f(t)');
-title('Response: Y(s)/F(s) = 4/(s+5), Pulse Input');
-xlabel('t'); grid on;
-\end{lstlisting}
+        % Summing junction (vertically centered between the two step blocks)
+        \node [sum, right=1.2cm of step1, yshift=-0.8cm] (sum1) {};
+        \node at ($(sum1.west)+(0.18, 0.08)$)  {\tiny $+$};
+        \node at ($(sum1.south)+(0.10, 0.18)$) {\tiny $+$};
+
+        % Transfer function block
+        \node [tfblock, right=1.0cm of sum1] (tf) {$\dfrac{4}{s+5}$};
+
+        % Scope
+        \node [scope, right=1.2cm of tf] (scope) {$\square$};
+
+        % Connections
+        \draw [->] (step1.east) -- ++(0.4,0) |- (sum1.west);
+        \draw [->] (step2.east) -- ++(0.4,0) |- (sum1.south);
+        \draw [->] (sum1) -- (tf);
+        \draw [->] (tf)   -- (scope);
+
+    \end{tikzpicture}
+    \caption{Simulink Block Diagram}
+\end{figure}
+
 
 %-----------------------------------
 \myproblem{Problem 33}
@@ -348,19 +642,7 @@ Create a Simulink model for a mass supported by a nonlinear hardening spring, $0
 \[5\ddot{y} = 5g - (900y + 1700y^3), \qquad y(0)=0.5,\;\dot{y}(0)=0\]
 Use $g = 9.81$ m/s$^2$.
 
-\begin{lstlisting}
-% State: x(1) = y, x(2) = y_dot
-% y_ddot = g - (900*y + 1700*y^3) / 5
-g = 9.81;
-ode = @(t, x) [x(2);
-               g - (900*x(1) + 1700*x(1)^3) / 5];
-[t, x] = ode45(ode, [0, 2], [0.5; 0]);
 
-plot(t, x(:,1), 'LineWidth', 1.5);
-title('Nonlinear Hardening Spring Response');
-xlabel('t (s)'); ylabel('y (m)');
-grid on;
-\end{lstlisting}
 
 %-----------------------------------
 \myproblem{Problem 35}
@@ -368,28 +650,42 @@ The equation for water height $h$ in a spherical tank (radius $r = 3$ m) with dr
 \[\pi(2rh - h^2)\frac{dh}{dt} = -C_d A\sqrt{2gh}\]
 Use Simulink to solve the nonlinear equation and plot $h(t)$ until $h(t) = 0$.
 
-\begin{lstlisting}
-r = 3; Cd = 0.5; g = 9.81;
-A = pi * 0.02^2;  % drain area, radius = 0.02 m
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            block/.style   = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
+            outblock/.style= {draw, rectangle, minimum height=0.9cm, minimum width=1.4cm, align=center},
+        }
 
-% ODE: dh/dt = -Cd*A*sqrt(2gh) / (pi*(2r*h - h^2))
-dhdt = @(t, h) -Cd * A * sqrt(2*g*h) / (pi * (2*r*h - h^2));
+        % Integrator block
+        \node [block, label=below:{\small Integrator}] (int1) {$\dfrac{1}{s}$};
 
-opts = odeset('Events', @stop_event, 'RelTol', 1e-6);
-[t, h] = ode45(dhdt, [0, 80000], 5, opts);
+        % To Workspace block
+        \node [outblock, right=1.2cm of int1, label=below:{\small To Workspace}] (ws) {\small simout};
 
-plot(t/3600, h, 'LineWidth', 1.5);
-title('Spherical Tank Draining');
-xlabel('Time (hours)'); ylabel('Water Height h (m)');
-grid on;
-fprintf('Tank empties at t = %.2f hours\n', t(end)/3600);
+        % Fcn block (feedback, below)
+        \node [block, below=1.2cm of int1, label=below:{\small Fcn}] (fcn) {$f(u)$};
 
-function [value, isterminal, direction] = stop_event(~, h)
-    value = h - 0.001;   % Stop when h < 1 mm
-    isterminal = 1;
-    direction = -1;
-end
-\end{lstlisting}
+        % Tap coordinate between int1 and ws
+        \coordinate (tap) at ($(int1.east)!0.5!(ws.west)$);
+        \filldraw (tap) circle (1.5pt);
+
+        % Forward connections
+        \draw [->] (int1) -- (ws);
+
+        % Input arrow into integrator
+        \draw [->] ($(int1.west)+(-0.8,0)$) -- (int1.west);
+
+        % Feedback: tap -> down -> fcn
+        \draw [->] (tap) |- (fcn.east);
+
+        % Fcn output -> back to integrator input
+        \draw [->] (fcn.west) -- ++(-0.8,0) |- (int1.west);
+
+    \end{tikzpicture}
+    \caption{Simulink Block Diagram}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 45}
@@ -402,27 +698,56 @@ Consider the system in Figure P45 with $m_1=m_2=1$, $c_1=3$, $c_2=1$, $k_1=1$, $
     \[f(t) = \begin{cases} t & 0 \le t \le 1 \\ 2-t & 1 < t < 2 \\ 0 & t \ge 2 \end{cases}\]
 \end{itemize}
 
-\begin{lstlisting}
-% Parameters
-m1=1; m2=1; c1=3; c2=1; k1=1; k2=4;
 
-% Piecewise input (triangular pulse)
-f = @(t) (t >= 0 & t <= 1).*t + (t > 1 & t < 2).*(2 - t);
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
+        \tikzset{
+            rampblock/.style = {draw, rectangle, minimum height=1.1cm, minimum width=1.1cm, align=center},
+            ssblock/.style   = {draw, rectangle, minimum height=1.4cm, minimum width=2.0cm, align=center},
+            outblock/.style  = {draw, rectangle, minimum height=1.0cm, minimum width=1.4cm, align=center},
+            sum/.style       = {draw, circle, minimum size=0.8cm, inner sep=0pt},
+        }
 
-% State: s = [x1; x1_dot; x2; x2_dot]
-% x1_ddot = [-(c1+c2)*x1_dot - (k1+k2)*x1 + c2*x2_dot + k2*x2] / m1
-% x2_ddot = [f(t) + c2*x1_dot + k2*x1 - c2*x2_dot - k2*x2] / m2
-ode = @(t, s) [
-    s(2);
-    (-(c1+c2)*s(2) - (k1+k2)*s(1) + c2*s(4) + k2*s(3)) / m1;
-    s(4);
-    (f(t) + c2*s(2) + k2*s(1) - c2*s(4) - k2*s(3)) / m2
-];
+        % Ramp blocks with diagonal line inside
+        \node [rampblock, label=below:{\small Ramp}]  (ramp0) {%
+            \begin{tikzpicture}[scale=0.25]
+                \draw [thick] (-1,-1) -- (1,1);
+            \end{tikzpicture}
+        };
+        \node [rampblock, below=0.8cm of ramp0, label=below:{\small Ramp1}] (ramp1) {%
+            \begin{tikzpicture}[scale=0.25]
+                \draw [thick] (-1,-1) -- (1,1);
+            \end{tikzpicture}
+        };
+        \node [rampblock, below=0.8cm of ramp1, label=below:{\small Ramp2}] (ramp2) {%
+            \begin{tikzpicture}[scale=0.25]
+                \draw [thick] (-1,-1) -- (1,1);
+            \end{tikzpicture}
+        };
 
-[t, sol] = ode45(ode, [0, 10], zeros(4, 1));
+        % Summing junction aligned with ramp1
+        \node [sum, right=1.2cm of ramp1] (sum1) {};
+        \node at ($(sum1.north)+(0.10,-0.18)$) {\tiny $+$};
+        \node at ($(sum1.west)+(0.18, 0.08)$)  {\tiny $+$};
+        \node at ($(sum1.south)+(0.10, 0.18)$) {\tiny $+$};
 
-plot(t, sol(:,1), 'LineWidth', 1.5);
-title('x_1(t) - Two Mass-Spring-Damper System');
-xlabel('t (s)'); ylabel('x_1 (m)');
-grid on;
-\end{lstlisting}
+        % State-Space block
+        \node [ssblock, right=1.2cm of sum1, label=below:{\small State-Space}] (ss) {%
+            \small $x' = Ax+Bu$\\
+            \small $y = Cx+Du$
+        };
+
+        % To Workspace
+        \node [outblock, right=1.2cm of ss, label=below:{\small To Workspace}] (ws) {\small simout};
+
+        % Connections
+        \draw [->] (ramp0.east) -- ++(0.4,0) |- (sum1.north);
+        \draw [->] (ramp1.east) -- (sum1.west);
+        \draw [->] (ramp2.east) -- ++(0.4,0) |- (sum1.south);
+        \draw [->] (sum1) -- (ss);
+        \draw [->] (ss)   -- (ws);
+
+    \end{tikzpicture}
+    \caption{Simulink Block Diagram}
+\end{figure}
