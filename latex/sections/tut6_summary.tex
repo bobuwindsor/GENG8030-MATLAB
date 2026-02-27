@@ -12,7 +12,7 @@
 % 1. DIRECT INTEGRATION
 %================================================================
 \section*{1. The Direct Integration Framework (For Standard ODEs)}
-\textbf{Applies to:} Problems 3, 5, 8, 33
+\textbf{Applies to:} \hyperref[prob:3]{Problem 3}, \hyperref[prob:5]{Problem 5}, \hyperref[prob:8]{Problem 8}, \hyperref[prob:33]{Problem 33}
 
 This framework is used when you are dealing with standard, time-domain differential equations containing $\dot{y}$ or $\ddot{y}$.
 
@@ -142,7 +142,7 @@ This framework is used when you are dealing with standard, time-domain different
 % 2. TRANSFER FUNCTIONS
 %================================================================
 \section*{2. The Transfer Function Framework (For LTI Systems)}
-\textbf{Applies to:} Problems 25, 28
+\textbf{Applies to:} \hyperref[prob:25]{Problem 25}, \hyperref[prob:28]{Problem 28}
 
 This framework is used for Linear Time-Invariant (LTI) systems, specifically when initial conditions are zero.
 
@@ -247,7 +247,7 @@ This framework is used for Linear Time-Invariant (LTI) systems, specifically whe
 % 3. STATE-SPACE
 %================================================================
 \section*{3. The State-Space Framework (For Coupled First-Order ODEs)}
-\textbf{Applies to:} Problems 13, 15, 45a
+\textbf{Applies to:} \hyperref[prob:13]{Problem 13}, \hyperref[prob:15]{Problem 15}, \hyperref[prob:45]{Problem 45a}
 
 This approach is required when the system is given as a system of coupled first-order differential equations, or when specifically asked to use state-variable representation.
 
@@ -352,7 +352,7 @@ This approach is required when the system is given as a system of coupled first-
 % 4. NONLINEAR & PIECEWISE
 %================================================================
 \section*{4. The Nonlinear \& Piecewise Framework (For Complex Behaviors)}
-\textbf{Applies to:} Problems 10, 18, 35, 45b
+\textbf{Applies to:} \hyperref[prob:10]{Problem 10}, \hyperref[prob:18]{Problem 18}, \hyperref[prob:35]{Problem 35}, \hyperref[prob:45]{Problem 45b}
 
 Standard linear blocks cannot handle bounded conditions, piecewise inputs, or arbitrary math functions.
 
@@ -479,7 +479,7 @@ Standard linear blocks cannot handle bounded conditions, piecewise inputs, or ar
 \section*{Tutorial Problems}
 
 %-----------------------------------
-\myproblem{Problem 3}
+\myproblem{Problem 3}\label{prob:3}
 Draw a simulation diagram for the equation:
 \[3\dot{y} + 5\sin y = f(t)\]
 
@@ -533,7 +533,7 @@ Draw a simulation diagram for the equation:
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 5}
+\myproblem{Problem 5}\label{prob:5}
 Draw a simulation diagram for the model:
 \begin{align*}
 \dot{x} &= -3x + 2y + f(t), \\
@@ -608,7 +608,7 @@ Draw a simulation diagram for the model:
 
 
 %-----------------------------------
-\myproblem{Problem 8}
+\myproblem{Problem 8}\label{prob:8}
 Create a Simulink model to plot the solution for $0 \le t \le 6$:
 \[10\ddot{y} = 7\sin 4t + 5\cos 3t, \qquad y(0)=3,\;\dot{y}(0)=2\]
 
@@ -625,7 +625,7 @@ Create a Simulink model to plot the solution for $0 \le t \le 6$:
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 10}
+\myproblem{Problem 10}\label{prob:10}
 The equation $\dot{x} + x = \tan t$, $x(0) = 0$ has no analytical solution. The approximate solution (less accurate for large $t$) is:
 \[x(t) = \tfrac{1}{3}t^3 - t^2 + 3t - 3 + 3\,e^{-t}\]
 Compare the numerical and approximate solutions.
@@ -714,7 +714,7 @@ Compare the numerical and approximate solutions.
 
 
 %-----------------------------------
-\myproblem{Problem 13}
+\myproblem{Problem 13}\label{prob:13}
 Construct a Simulink model to plot solutions for $0 \le t \le 2$:
 \begin{align*}
 \dot{x}_1 &= -6x_1 + 4x_2, \\
@@ -757,7 +757,7 @@ where $f(t) = 3t$. Use the Ramp block in the Sources library.
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 15}
+\myproblem{Problem 15}\label{prob:15}
 Construct a Simulink model to plot solutions for $0 \le t \le 10$:
 \[\dot{x} = -5x + 3y + 5\sin 2t,\quad x(0)=0\]
 \[\dot{y} = 3x - 4y,\quad y(0)=0\]
@@ -834,7 +834,7 @@ Construct a Simulink model to plot solutions for $0 \le t \le 10$:
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 18}
+\myproblem{Problem 18}\label{prob:18}
 Construct a Simulink model for $5\dot{x} + \sin x = f(t)$, $x(0) = 0$, where $g(t) = 10\sin 4t$ and:
 \[f(t) = \begin{cases} -5 & \text{if } g(t) \le -5 \\ g(t) & \text{if } -5 < g(t) < 5 \\ 5 & \text{if } g(t) \ge 5 \end{cases}\]
 
@@ -902,19 +902,10 @@ Construct a Simulink model for $5\dot{x} + \sin x = f(t)$, $x(0) = 0$, where $g(
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 25}
+\myproblem{Problem 25}\label{prob:25}
 Use Transfer Function blocks to plot solutions for $0 \le t \le 2$:
 \[3\ddot{x} + 15\dot{x} + 18x = f(t),\quad x(0)=\dot{x}(0)=0\]
 \[2\ddot{y} + 16\dot{y} + 50y = x(t),\quad y(0)=\dot{y}(0)=0\]
-where $f(t) = 75\,u_s(t)$.
-
-\textbf{Problem 25}
-
-Use Transfer Function blocks to plot solutions for $0 \leq t \leq 2$:
-\begin{align*}
-    3\ddot{x} + 15\dot{x} + 18x &= f(t), \quad x(0) = \dot{x}(0) = 0 \\
-    2\ddot{y} + 16\dot{y} + 50y &= x(t), \quad y(0) = \dot{y}(0) = 0
-\end{align*}
 where $f(t) = 75\,u_s(t)$.
 
 \textbf{Solution:} Taking the Laplace transform with zero initial conditions:
@@ -988,7 +979,7 @@ and $y(t)$ are collected via a Mux into the \texttt{simout} To~Workspace block.
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 28}
+\myproblem{Problem 28}\label{prob:28}
 Create a Simulink model to plot the solution for $0 \le t \le 1$:
 \[\frac{Y(s)}{F(s)} = \frac{4}{s+5}, \qquad f(t) = u_s(t) - u_s(t-1)\]
 
@@ -1041,7 +1032,7 @@ Create a Simulink model to plot the solution for $0 \le t \le 1$:
 
 
 %-----------------------------------
-\myproblem{Problem 33}
+\myproblem{Problem 33}\label{prob:33}
 Create a Simulink model for a mass supported by a nonlinear hardening spring, $0 \le t \le 2$:
 \[5\ddot{y} = 5g - (900y + 1700y^3), \qquad y(0)=0.5,\;\dot{y}(0)=0\]
 Use $g = 9.81$ m/s$^2$.
@@ -1065,7 +1056,7 @@ Use $g = 9.81$ m/s$^2$.
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 35}
+\myproblem{Problem 35}\label{prob:35}
 The equation for water height $h$ in a spherical tank (radius $r = 3$ m) with drain (radius 2 cm, $C_d = 0.5$), $h(0) = 5$ m:
 \[\pi(2rh - h^2)\frac{dh}{dt} = -C_d A\sqrt{2gh}\]
 Use Simulink to solve the nonlinear equation and plot $h(t)$ until $h(t) = 0$.
@@ -1108,7 +1099,7 @@ Use Simulink to solve the nonlinear equation and plot $h(t)$ until $h(t) = 0$.
 \end{figure}
 
 %-----------------------------------
-\myproblem{Problem 45}
+\myproblem{Problem 45}\label{prob:45}
 Consider the system in Figure P45 with $m_1=m_2=1$, $c_1=3$, $c_2=1$, $k_1=1$, $k_2=4$:
 \[m_1\ddot{x}_1 + (c_1+c_2)\dot{x}_1 + (k_1+k_2)x_1 - c_2\dot{x}_2 - k_2x_2 = 0\]
 \[m_2\ddot{x}_2 + c_2\dot{x}_2 + k_2x_2 - c_2\dot{x}_1 - k_2x_1 = f(t)\]
