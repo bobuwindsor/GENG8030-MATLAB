@@ -33,17 +33,9 @@ This framework is used when you are dealing with standard, time-domain different
     \item \textbf{Math Functions:} Draw a square and write the function name inside (e.g., $\sin$, $\cos$, $\tan$).
 \end{itemize}
 
-\textbf{How to Draw the Process (Example: $3\dot{y} + 5\sin y = f(t)$):}
-\begin{itemize}
-    \item \textbf{Isolate:} Mentally rearrange to $\dot{y} = \frac{1}{3}(f(t) - 5\sin y)$.
-    \item \textbf{The Spine:} Draw an Integrator ($\frac{1}{s}$) in the middle of the page. Draw an arrow exiting the right side and label the line $y(t)$.
-    \item \textbf{The Feedback:} Tap the $y(t)$ line, draw an arrow looping back to the left, and pass it through a square labeled $\sin$, then through a triangle labeled $5$.
-    \item \textbf{The Summation:} Draw a circle (Sum junction) to the left of the Integrator. Draw an arrow from your input $f(t)$ into a $+$ port. Bring the arrow from your $5$ triangle into a $-$ port.
-    \item \textbf{The Final Gain:} Draw an arrow from the Sum circle through a triangle labeled $\frac{1}{3}$, and plug that arrow into the Integrator.
-\end{itemize}
-
 \begin{figure}[H]
     \centering
+    \resizebox{0.75\textwidth}{!}{%
     \begin{tikzpicture}[>=Stealth]
         
         % Define standard block styles
@@ -139,6 +131,7 @@ This framework is used when you are dealing with standard, time-domain different
         \draw [->, thick] (gainK4.west) -| ($(sum_s4.south east)+(-0.15,-0.15)$);
 
     \end{tikzpicture}
+    }
     \caption{The 4-Step Direct Integration Framework}
 \end{figure}
 
@@ -176,6 +169,78 @@ This framework is used for Linear Time-Invariant (LTI) systems, specifically whe
     \item Draw standard straight arrows connecting them from left to right.
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \resizebox{0.75\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth]
+        
+        % Define standard block styles
+        \tikzset{
+            panel/.style = {draw, rectangle, rounded corners, minimum width=15cm, fill=gray!5, dashed},
+            tfblock/.style = {draw, rectangle, minimum width=3cm, minimum height=1.5cm, align=center, fill=blue!5},
+            ioblock/.style = {draw, rectangle, minimum width=1.5cm, minimum height=1.5cm, align=center, fill=blue!5}
+        }
+
+        %=========================================
+        % STEP 1: CONVERT TO LAPLACE
+        %=========================================
+        % Centered at y=0, height 2.5cm
+        \node [panel, minimum height=2.5cm] (p1) at (0,0) {};
+        \node [anchor=north west, font=\bfseries] at (p1.north west) {Step 1: Convert to Laplace (Assume zero initial conditions)};
+        
+        \node [anchor=center, font=\Large] at (p1.center) {
+            $3\ddot{x} + 15\dot{x} + 18x = f(t) \quad \xrightarrow{\mathcal{L}} \quad (3s^2 + 15s + 18)X(s) = F(s)$
+        };
+
+        %=========================================
+        % STEP 2: DEFINE POLYNOMIALS
+        %=========================================
+        % Centered at y=-3.5, height 2.5cm
+        \node [panel, minimum height=2.5cm] (p2) at (0,-3.5) {};
+        \node [anchor=north west, font=\bfseries] at (p2.north west) {Step 2: Define Polynomials (Numerator / Denominator)};
+        
+        \node [anchor=center, font=\Large] at (p2.center) {
+            $G(s) = \frac{X(s)}{F(s)} = \frac{1}{3s^2 + 15s + 18}$
+        };
+
+        %=========================================
+        % STEP 3: BLOCK SETUP
+        %=========================================
+        % Centered at y=-7.5, height 3.5cm
+        \node [panel, minimum height=3.5cm] (p3) at (0, -7.5) {};
+        \node [anchor=north west, font=\bfseries] at (p3.north west) {Step 3: Block Setup (Input coefficients in descending order)};
+        
+        % Transfer Function Block
+        \node [tfblock, font=\large] (tf_s3) at (0, -7.5) {$\frac{1}{3s^2 + 15s + 18}$};
+        
+        % Parameter Labels
+        \node [above=0.1cm of tf_s3, font=\small\ttfamily, color=black!70] {Numerator parameters: [1]};
+        \node [below=0.1cm of tf_s3, font=\small\ttfamily, color=black!70] {Denominator parameters: [3 15 18]};
+
+        %=========================================
+        % STEP 4: CONNECT INPUT/OUTPUT
+        %=========================================
+        % Centered at y=-12.5, height 4cm
+        \node [panel, minimum height=4cm] (p4) at (0, -12.5) {};
+        \node [anchor=north west, font=\bfseries] at (p4.north west) {Step 4: Connect Input/Output (Chain for cascaded systems)};
+        
+        % Blocks
+        \node [ioblock] (step) at (-6, -12.5) {Step};
+        \node [tfblock] (tf1_s4) at (-2, -12.5) {$\frac{1}{3s^2 + 15s + 18}$};
+        \node [tfblock] (tf2_s4) at (2.5, -12.5) {$\frac{1}{2s^2 + 16s + 50}$};
+        \node [ioblock] (scope) at (6.5, -12.5) {Scope};
+        
+        % Connections
+        \draw [->, thick] (step) -- node[above] {$F(s)$} (tf1_s4);
+        \draw [->, thick] (tf1_s4) -- node[above] {$X(s)$} (tf2_s4);
+        \draw [->, thick] (tf2_s4) -- node[above] {$Y(s)$} (scope);
+
+    \end{tikzpicture}
+    }
+    \caption{The 4-Step Transfer Function Framework (LTI Systems)}
+\end{figure}
+
+
 \vspace{0.5cm}
 % 
 %================================================================
@@ -206,6 +271,80 @@ This approach is required when the system is given as a system of coupled first-
     \item Draw an arrow from the right side of the State-Space block to an output block (e.g., ``simout'').
     \item \textit{(Tip for the quiz: Write out the actual $A, B, C, D$ matrices next to the diagram to show the professor you know exactly what is happening inside the block.)}
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.75\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth]
+        
+        % Define standard block styles
+        \tikzset{
+            panel/.style = {draw, rectangle, rounded corners, minimum width=15cm, fill=gray!5, dashed},
+            ssblock/.style = {draw, rectangle, minimum width=3.5cm, minimum height=1.8cm, align=center, fill=blue!5},
+            ioblock/.style = {draw, rectangle, minimum width=1.5cm, minimum height=1.5cm, align=center, fill=blue!5},
+            param/.style = {draw, rectangle, fill=white, minimum width=8cm, minimum height=1.2cm, align=left}
+        }
+
+        %=========================================
+        % STEP 1: FORMULATE THE MATRICES
+        %=========================================
+        % Increased height to 4cm to accommodate tall matrices
+        \node [panel, minimum height=4cm] (p1) at (0,0) {};
+        \node [anchor=north west, font=\bfseries] at (p1.north west) {Step 1: Formulate the Matrices (Extract $A, B, C, D$)};
+        
+        % Slightly lowered the center to balance the title text above it
+        \node [anchor=center, font=\large] at (0,-0.3) {
+            $\begin{aligned}
+            \dot{x}_1 &= -6x_1 + 4x_2 \\
+            \dot{x}_2 &= 5x_1 - 7x_2 + u(t)
+            \end{aligned}
+            \quad \Rightarrow \quad
+            A = \begin{bmatrix} -6 & 4 \\ 5 & -7 \end{bmatrix}, \quad
+            B = \begin{bmatrix} 0 \\ 1 \end{bmatrix}, \quad
+            C = \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}, \quad
+            D = \begin{bmatrix} 0 \\ 0 \end{bmatrix}$
+        };
+
+        %=========================================
+        % STEP 2: THE STATE-SPACE BLOCK
+        %=========================================
+        % Shifted down to y=-5.5, height 4cm
+        \node [panel, minimum height=4cm] (p2) at (0,-5.5) {};
+        \node [anchor=north west, font=\bfseries] at (p2.north west) {Step 2: The State-Space Block (Drop block and input matrices)};
+        
+        % State-Space Block
+        \node [ssblock, font=\large] (ss_s2) at (0, -5.5) {$x' = Ax + Bu$ \\ $y = Cx + Du$};
+        \node [ioblock] (input) at (-5, -5.5) {Ramp};
+        \node [ioblock] (output) at (5, -5.5) {simout};
+        
+        % Connections
+        \draw [->, thick] (input) -- node[above] {$u$} (ss_s2);
+        \draw [->, thick] (ss_s2) -- node[above] {$y$} (output);
+
+        % Annotations
+        \node [below=0.1cm of ss_s2, font=\small\ttfamily, color=black!70] {Parameters: A, B, C, D};
+
+        %=========================================
+        % STEP 3: DEFINE INITIAL CONDITIONS
+        %=========================================
+        % Shifted down to y=-11, height 3.5cm
+        \node [panel, minimum height=3.5cm] (p3) at (0, -11) {};
+        \node [anchor=north west, font=\bfseries] at (p3.north west) {Step 3: Define Initial Conditions (Set vector directly in parameters)};
+        
+        % Parameter Window Mockup (Added a tiny bit of vertical spacing \\[0.1cm])
+        \node [param] (param_box) at (0, -11.5) {
+            \small \textbf{Block Parameters: State-Space} \\[0.1cm]
+            \small Initial conditions: \quad \texttt{[0; 0]}
+        };
+        
+        % Arrow pointing to it (Moved safely inside the panel bounds)
+        \draw [->, thick, color=black!50] (0, -9.8) -- (0, -10.8) node[midway, right, font=\small] {Double-click block};
+
+    \end{tikzpicture}
+    }%
+    \caption{The 3-Step State-Space Framework}
+\end{figure}
+
 
 \vspace{0.5cm}
 
@@ -240,6 +379,97 @@ Standard linear blocks cannot handle bounded conditions, piecewise inputs, or ar
     \item Route the output of the Sum circle into your main system (like a State-Space block).
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \resizebox{0.75\textwidth}{!}{%
+    \begin{tikzpicture}[>=Stealth]
+        
+        % Define standard block styles
+        \tikzset{
+            panel/.style = {draw, rectangle, rounded corners, minimum width=15cm, fill=gray!5, dashed},
+            block/.style = {draw, rectangle, minimum width=2cm, minimum height=1.5cm, align=center, fill=blue!5},
+            sum/.style = {draw, circle, minimum size=0.8cm, inner sep=0pt, fill=blue!5},
+            rampbox/.style = {draw, rectangle, minimum width=1.2cm, minimum height=1.2cm, fill=white},
+            satbox/.style = {draw, rectangle, minimum width=1.8cm, minimum height=1.5cm, fill=blue!5},
+            fcnbox/.style = {draw, rectangle, minimum width=2.5cm, minimum height=1.5cm, align=center, fill=blue!5}
+        }
+
+        %=========================================
+        % CASE 1: BOUNDED LIMITS
+        %=========================================
+        % Centered at y=0, height 3.5cm
+        \node [panel, minimum height=3.5cm] (p1) at (0,0) {};
+        \node [anchor=north west, font=\bfseries] at (p1.north west) {Case 1: Bounded Limits (Cap min/max values)};
+        
+        % Blocks
+        \node [block] (input1) at (-4, -0.5) {Signal};
+        \node [satbox] (sat) at (0, -0.5) {};
+        \node [block] (output1) at (4, -0.5) {Capped \\ Signal};
+        
+        % Saturation Icon (inside the box)
+        \draw [thick] ($(sat.south west)+(0.3,0.3)$) -- ($(sat.south west)+(0.7,0.3)$) -- ($(sat.north east)+(-0.7,-0.3)$) -- ($(sat.north east)+(-0.3,-0.3)$);
+        \node [above=0.1cm of sat, font=\small] {Saturation};
+        
+        % Connections
+        \draw [->, thick] (input1) -- (sat);
+        \draw [->, thick] (sat) -- (output1);
+
+        %=========================================
+        % CASE 2: CUSTOM EQUATIONS
+        %=========================================
+        % Centered at y=-4.5, height 3.5cm
+        \node [panel, minimum height=3.5cm] (p2) at (0,-4.5) {};
+        \node [anchor=north west, font=\bfseries] at (p2.north west) {Case 2: Custom Equations (Complex nonlinear math)};
+        
+        % Blocks
+        \node [block] (input2) at (-4, -5) {$u$};
+        \node [fcnbox, font=\large] (fcn) at (0, -5) {$f(u)$};
+        \node [block] (output2) at (4, -5) {Output};
+        
+        % Annotations
+        \node [above=0.1cm of fcn, font=\small] {Fcn Block};
+        \node [below=0.1cm of fcn, font=\small\ttfamily, color=black!70] {Expression: u\textasciicircum2 or sqrt(u)};
+        
+        % Connections
+        \draw [->, thick] (input2) -- (fcn);
+        \draw [->, thick] (fcn) -- node[above] {$f(u)$} (output2);
+
+        %=========================================
+        % CASE 3: PIECEWISE INPUTS
+        %=========================================
+        % Centered at y=-11.5, height 7.5cm
+        \node [panel, minimum height=7.5cm] (p3) at (0, -11.5) {};
+        \node [anchor=north west, font=\bfseries] at (p3.north west) {Case 3: Piecewise Inputs (Synthesize changing waveforms)};
+        
+        % Ramp Blocks
+        \node [rampbox, label=left:{Ramp 1}] (ramp1) at (-4, -9) {};
+        \node [rampbox, label=left:{Ramp 2}] (ramp2) at (-4, -11.5) {};
+        \node [rampbox, label=left:{Ramp 3}] (ramp3) at (-4, -14) {};
+        
+        % Ramp Icons
+        \draw [thick] ($(ramp1.south west)+(0.2,0.2)$) -- ($(ramp1.south west)+(0.4,0.2)$) -- ($(ramp1.north east)+(-0.2,-0.2)$);
+        \draw [thick] ($(ramp2.south west)+(0.2,0.2)$) -- ($(ramp2.south west)+(0.4,0.2)$) -- ($(ramp2.north east)+(-0.2,-0.2)$);
+        \draw [thick] ($(ramp3.south west)+(0.2,0.2)$) -- ($(ramp3.south west)+(0.4,0.2)$) -- ($(ramp3.north east)+(-0.2,-0.2)$);
+        
+        % Sum Block
+        \node [sum] (sum3) at (0, -11.5) {};
+        \node [font=\tiny] at ($(sum3.north west)+(0.25,-0.1)$) {$+$};
+        \node [font=\tiny] at ($(sum3.west)+(0.15,0)$) {$+$};
+        \node [font=\tiny] at ($(sum3.south west)+(0.25,0.1)$) {$+$};
+        
+        % System Block
+        \node [block] (sys) at (4, -11.5) {System};
+        
+        % Connections
+        \draw [->, thick] (ramp1.east) -| (sum3.north);
+        \draw [->, thick] (ramp2.east) -- (sum3.west);
+        \draw [->, thick] (ramp3.east) -| (sum3.south);
+        \draw [->, thick] (sum3.east) -- node[above] {$f(t)$} (sys.west);
+
+    \end{tikzpicture}
+    }
+    \caption{The Nonlinear \& Piecewise Frameworks}
+\end{figure}
 
 
 \vspace{1cm}
