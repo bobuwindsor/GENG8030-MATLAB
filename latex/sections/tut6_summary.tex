@@ -483,6 +483,8 @@ Standard linear blocks cannot handle bounded conditions, piecewise inputs, or ar
 Draw a simulation diagram for the equation:
 \[3\dot{y} + 5\sin y = f(t)\]
 
+\textbf{Solution:}
+
 \begin{figure}[H]
     \centering
     \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
@@ -610,47 +612,16 @@ Draw a simulation diagram for the model:
 Create a Simulink model to plot the solution for $0 \le t \le 6$:
 \[10\ddot{y} = 7\sin 4t + 5\cos 3t, \qquad y(0)=3,\;\dot{y}(0)=2\]
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
-    \begin{tikzpicture}[>=Stealth, node distance=1cm and 1.2cm]
-        \tikzset{
-            waveblock/.style = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
-            block/.style     = {draw, rectangle, minimum height=1.0cm, minimum width=1.0cm, align=center},
-            outblock/.style  = {draw, rectangle, minimum height=0.8cm, minimum width=1.2cm, align=center},
-            sum/.style       = {draw, circle, minimum size=0.8cm, inner sep=0pt},
-            gainR/.style     = {draw, isosceles triangle, isosceles triangle apex angle=60,
-                                minimum height=1.0cm, shape border rotate=0, inner sep=2pt},
-        }
+    \includegraphics[width=0.75\textwidth]{images/t6_8.png}
+    \caption{Problem 8 Solution}
+\end{figure}
 
-        % Wave source blocks
-        \node [waveblock, label=below:{\small Sine Wave\newline Function}] (sine) {$\sim$};
-        \node [waveblock, below=1.2cm of sine, label=below:{\small Cosine Wave\newline Function}] (cosine) {$\sim$};
-
-        % Summing junction (vertically centered between sine and cosine)
-        \node [sum, right=1.0cm of sine, yshift=-0.7cm] (sum1) {};
-        \node at ($(sum1.north)+(0.12,-0.18)$) {\tiny $+$};
-        \node at ($(sum1.south)+(0.12, 0.18)$) {\tiny $+$};
-
-        % Forward path
-        \node [gainR, right=0.8cm of sum1] (gain) {$\frac{1}{10}$};
-        \node [block,  right=1.0cm of gain, label=below:{\small Integrator}]   (int1) {$\dfrac{1}{s}$};
-        \node [block,  right=1.0cm of int1, label=below:{\small Integrator 1}] (int2) {$\dfrac{1}{s}$};
-        \node [outblock, right=1.0cm of int2, label=below:{\small To Workspace}] (out) {\small simout};
-
-        % Connections: sine -> sum (from top)
-        \draw [->] (sine.east) -- ++(0.3,0) |- (sum1.north);
-
-        % Connections: cosine -> sum (from bottom)
-        \draw [->] (cosine.east) -- ++(0.3,0) |- (sum1.south);
-
-        % Forward path connections
-        \draw [->] (sum1)  -- (gain);
-        \draw [->] (gain)  -- (int1);
-        \draw [->] (int1)  -- (int2);
-        \draw [->] (int2)  -- (out);
-
-    \end{tikzpicture}
-    \caption{Simulink Block Diagram}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/t6_8_1.png}
+    \caption{Problem 8 Solution Result}
 \end{figure}
 
 %-----------------------------------
@@ -1075,7 +1046,23 @@ Create a Simulink model for a mass supported by a nonlinear hardening spring, $0
 \[5\ddot{y} = 5g - (900y + 1700y^3), \qquad y(0)=0.5,\;\dot{y}(0)=0\]
 Use $g = 9.81$ m/s$^2$.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/t6_33.png}
+    \caption{Problem 33 Solution}
+\end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/t6_33_2.png}
+    \caption{Problem 33 Matlab function}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/t6_33_1.png}
+    \caption{Problem 33 Result}
+\end{figure}
 
 %-----------------------------------
 \myproblem{Problem 35}
