@@ -507,8 +507,7 @@ Draw a simulation diagram for the equation:
         \node at ($(sum.south)+(0.12,0.18)$) {\tiny $-$};
         % Forward Path Blocks
         \node [gain, right=0.8cm of sum] (gain1) {$\frac{1}{3}$};
-        \node [block, right=0.8cm of gain1] (int1) {\Large $\frac{1}{s}$};
-        \node [block, right=0.8cm of int1] (int2) {\Large $\frac{1}{s}$};
+        \node [block, right=0.8cm of gain1] (int2) {\Large $\frac{1}{s}$};
         % Output Block
         \node [oval, label=below:{$y(t)$}, right=1.5cm of int2] (output) {1};
         % Feedback Path Blocks
@@ -517,8 +516,7 @@ Draw a simulation diagram for the equation:
         % Forward Connections
         \draw [->] (input) -- (sum);
         \draw [->] (sum) -- (gain1);
-        \draw [->] (gain1) -- (int1);
-        \draw [->] (int1) -- (int2);
+        \draw [->] (gain1) -- (int2);
         % Tap junction and output connection
         \coordinate (tap) at ($(int2.east)!0.4!(output.west)$);
         \draw [->] (int2) -- (output);
