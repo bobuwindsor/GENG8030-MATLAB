@@ -1,0 +1,123 @@
+%===================================
+% KEY SUMMARY — Tutorial 7 Concepts
+%===================================
+
+\section{Core Plotting Functions and Formatting}
+MATLAB provides robust tools for visualizing engineering data. The foundational command is \texttt{plot(x, y)}, which generates standard two-dimensional rectilinear graphs.
+
+\subsection{Function Evaluation vs. Data Plotting}
+\begin{itemize}
+    \item \textbf{\texttt{fplot}:} Used for plotting mathematical functions rather than discrete data arrays. It automatically adjusts the evaluation spacing to accurately capture rapid oscillations (e.g., $f(x) = \cos(\tan(x)) - \tan(\sin(x))$) that a uniform spacing step like $0.01$ might miss.
+    \item \textbf{\texttt{polyval}:} Useful for quickly evaluating polynomials over an array of points before plotting. For example, evaluating $3x^5 + 2x^4 - 100x^3$:
+    \begin{lstlisting}
+p = [3, 2, -100, 2, -7, 90];
+y = polyval(p, x);
+    \end{lstlisting}
+\end{itemize}
+
+\subsection{Axis and Grid Control}
+\begin{itemize}
+    \item \textbf{\texttt{axis([xmin xmax ymin ymax])}:} Overrides MATLAB's automatic scaling to enforce specific minimum and maximum limits for the $x$ and $y$ axes. 
+    \item \textbf{\texttt{grid on} / \texttt{grid off}:} Toggles the display of gridlines corresponding to the tick marks.
+\end{itemize}
+
+\section{Styling: Data Markers, Line Types, and Colors}
+When plotting multiple datasets, it is critical to distinguish them visually. This is done by passing a string specifier to the \texttt{plot} command: \texttt{plot(x, y, 'r--*')}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll|ll|lll}
+\toprule
+\textbf{Data Markers} & \textbf{Specifier} & \textbf{Line Types} & \textbf{Specifier} & \textbf{Colors} & \textbf{Specifier} & \textbf{Color Swatch} \\
+\midrule
+Dot & \texttt{.} & Solid line & \texttt{-} & Black & \texttt{k} & \cellcolor{black} \\
+Asterisk & \texttt{*} & Dashed line & \texttt{--} & Blue & \texttt{b} & \cellcolor{blue} \\
+Cross & \texttt{x} & Dash-dotted & \texttt{-.} & Red & \texttt{r} & \cellcolor{red} \\
+Circle & \texttt{o} & Dotted line & \texttt{:} & Green & \texttt{g} & \cellcolor{green} \\
+Square & \texttt{s} & & & Cyan & \texttt{c} & \cellcolor{cyan} \\
+Diamond & \texttt{d} & & & Magenta & \texttt{m} & \cellcolor{magenta} \\
+\bottomrule
+\end{tabular}
+\caption{Common MATLAB Plot Specifiers}
+\end{table}
+
+\section{Managing Multiple Plots}
+\subsection{The \texttt{hold} Command}
+To overlay multiple curves onto the exact same set of axes, use \texttt{hold on}. MATLAB will freeze the current axes, allowing subsequent \texttt{plot} commands to add lines without erasing the existing ones. Use \texttt{hold off} to return to normal behavior.
+
+\subsection{Subplots}
+The \texttt{subplot(m,n,p)} command divides the Figure window into a matrix of rectangular panes with $m$ rows and $n$ columns. The variable $p$ directs the next plot to appear in the $p$-th pane (counted row-wise).
+\begin{lstlisting}
+subplot(2, 1, 1); % Top pane
+plot(x, y1);
+subplot(2, 1, 2); % Bottom pane
+plot(x, y2);
+\end{lstlisting}
+
+\section{Logarithmic Scaling}
+Rectilinear scales cannot properly display variations over wide ranges (e.g., exponential growth or frequency responses spanning multiple decades). 
+
+\subsection{Commands}
+\begin{itemize}
+    \item \textbf{\texttt{semilogx(x,y)}:} Logarithmic $x$-axis, rectilinear $y$-axis.
+    \item \textbf{\texttt{semilogy(x,y)}:} Rectilinear $x$-axis, logarithmic $y$-axis.
+    \item \textbf{\texttt{loglog(x,y)}:} Both axes are logarithmic.
+\end{itemize}
+
+\subsection{Mathematical Rules of Log Scales}
+\begin{enumerate}
+    \item \textbf{No Non-Positive Numbers:} You cannot plot $0$ or negative numbers on a log scale because $\log_{10}(x)$ is undefined for $x \le 0$ in the real domain.
+    \item \textbf{Equal Distances = Multiplication:} On a rectilinear scale, a fixed distance represents addition (e.g., $+10$). On a log scale, a fixed distance represents multiplication by a constant factor (e.g., $\times 10$). The space between $0.1$ and $1$ is physically the same as the space between $10$ and $100$.
+    \item \textbf{Tick Mark Spacing:} Gridlines within a single "decade" (e.g., $10^1$ to $10^2$) are unevenly spaced. 
+\end{enumerate}
+
+\section{Specialized 2D and Implicit Plotting}
+MATLAB offers several alternatives to standard line graphs:
+\begin{itemize}
+    \item \textbf{\texttt{bar(x,y)}:} Creates a vertical bar chart.
+    \item \textbf{\texttt{stairs(x,y)}:} Creates a step-like graph (useful for digital signals).
+    \item \textbf{\texttt{stem(x,y)}:} Plots discrete sequence data with lines terminating in markers.
+    \item \textbf{\texttt{polarplot(theta, r)}:} Generates a plot using polar coordinates (angle $\theta$ in radians, radius $r$).
+    \item \textbf{\texttt{errorbar(x, y, error)}:} Plots data with vertical error bars indicating uncertainty or standard deviation.
+    \item \textbf{\texttt{fimplicit(f)}:} Plots 2D implicit functions of the form $f(x,y) = 0$ (e.g., $x^2 - y^2 - 1 = 0$).
+\end{itemize}
+
+\section{Three-Dimensional Plotting}
+Visualizing 3D data requires defining a two-dimensional grid of coordinates in the $xy$-plane before evaluating the $z$ height.
+
+\subsection{Generating the Grid}
+Use \texttt{[X,Y] = meshgrid(xmin:spacing:xmax)} to generate matrices containing the $x$ and $y$ coordinates for every point in the domain.
+
+\subsection{3D Commands}
+\begin{itemize}
+    \item \textbf{\texttt{plot3(x, y, z)}:} Plots a 3D line or trajectory (e.g., a helical spiral).
+    \item \textbf{\texttt{mesh(X, Y, Z)}:} Creates a 3D wireframe surface plot.
+    \item \textbf{\texttt{surf(X, Y, Z)}:} Creates a 3D surface plot with shaded solid faces.
+    \item \textbf{\texttt{surfc(X, Y, Z)}:} Same as \texttt{surf}, but draws a 2D contour projection beneath the surface.
+    \item \textbf{\texttt{contour(X, Y, Z)}:} Generates a 2D topographical map of the 3D surface.
+    \item \textbf{\texttt{fimplicit3(f)}:} Plots 3D implicit functions defined by $f(x,y,z) = 0$.
+\end{itemize}
+
+\section{Publishing and The Live Editor}
+\begin{itemize}
+    \item \textbf{Standard Publishing:} In traditional \texttt{.m} scripts, using the double percent character (\texttt{\%\%}) creates section headings. The \texttt{publish} function can convert these scripts into formatted HTML or PDF reports containing the code, comments, and generated graphics.
+    \item \textbf{Live Editor (\texttt{.mlx}):} An interactive notebook environment where code, formatted text, equations, and graphical outputs exist side-by-side. Code blocks can be run individually, making it ideal for iterative testing and sharing educational narratives.
+\end{itemize}
+
+\section{Best Practices and Common Pitfalls}
+Adhering to strict standards ensures that engineering plots are readable and mathematically sound.
+
+\subsection{Formatting Best Practices}
+\begin{itemize}
+    \item \textbf{Labels and Units:} Every axis MUST be labeled with the physical quantity and its units (e.g., \texttt{Time (seconds)}).
+    \item \textbf{Sensible Tick Spacing:} Use intuitive intervals (e.g., $0.1, 0.2, 0.3$) rather than arbitrary numbers generated by raw division (e.g., $0.13, 0.26$).
+    \item \textbf{Scale Origins:} Start scales from zero whenever possible to prevent exaggerating the physical magnitude of small variations.
+    \item \textbf{Handling Large Numbers:} Minimize trailing zeros on axes. Plot data in "Millions of Dollars" rather than writing $1,000,000$ on the tick marks.
+\end{itemize}
+
+\subsection{Major Pitfalls to Avoid}
+\begin{itemize}
+    \item \textbf{Misrepresenting Discrete Data:} If you are plotting measured, experimental data points, do \textit{not} connect them with solid lines without justification. A solid line implies continuous knowledge of the physical system between the sample points. Plot data with discrete markers (like \texttt{o} or \texttt{*}).
+    \item \textbf{Misrepresenting Continuous Functions:} Conversely, when evaluating a mathematical function, generate a sufficiently dense array of points and connect them with solid lines. Do not use scattered data markers for continuous functions.
+    \item \textbf{Color Reliance in Print:} Differentiating curves exclusively by color (e.g., a red line vs. a green line) will render the graph unreadable if printed in black-and-white. Always combine color with varying line styles (dashed, dotted) or different markers to ensure accessibility and print reliability.
+\end{itemize}
