@@ -121,3 +121,282 @@ Adhering to strict standards ensures that engineering plots are readable and mat
     \item \textbf{Misrepresenting Continuous Functions:} Conversely, when evaluating a mathematical function, generate a sufficiently dense array of points and connect them with solid lines. Do not use scattered data markers for continuous functions.
     \item \textbf{Color Reliance in Print:} Differentiating curves exclusively by color (e.g., a red line vs. a green line) will render the graph unreadable if printed in black-and-white. Always combine color with varying line styles (dashed, dotted) or different markers to ensure accessibility and print reliability.
 \end{itemize}
+
+
+%-----------------------------------
+\vspace{0.5cm}
+\hrule
+
+\section*{Tutorial Problems}
+\myproblem{Problem 6}
+To compute the forces in structures, sometimes we must solve equations similar to the following. Use the fplot function to find all the roots of this equation between 0 and 5: 
+$$x \tan(2x)=10$$
+
+\begin{lstlisting}
+% Define the function f(x) = 0
+f = @(x) x.*tan(2*x) - 10;
+
+% Plot using fplot
+figure;
+fplot(f, [0 5]);
+grid on;
+title('Plot of f(x) = x tan(2x) - 10');
+xlabel('x'); ylabel('f(x)');
+
+% Roots can be visually estimated from the x-intercepts
+% or found precisely using the fzero command.
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 11}
+Plot columns 2 and 3 of the following matrix A versus column 1. The data in column 1 are time (seconds). 
+The data in columns 2 and 3 are force (newtons). 
+$$A=\begin{bmatrix}0&-7&6\\ 5&-4&9\\ 10&-1&9\\ 15&1&0\\ 20&2&-1\end{bmatrix}$$ 
+
+\begin{lstlisting}
+% Define the matrix A
+A = [0 -7 6; 
+     5 -4 9; 
+    10 -1 9; 
+    15  1 0; 
+    20  2 -1];
+
+% Extract columns
+t = A(:, 1);  % Time
+f1 = A(:, 2); % Force 1
+f2 = A(:, 3); % Force 2
+
+% Plot the data
+figure;
+plot(t, f1, '-o', t, f2, '-*');
+title('Force vs. Time');
+xlabel('Time (seconds)'); ylabel('Force (newtons)');
+legend('Column 2 (Force 1)', 'Column 3 (Force 2)');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 19}
+The height $h(t)$ and horizontal distance $x(t)$ traveled by a ball thrown at an angle A with a speed v are given by
+$$h(t)=vt \sin A-\frac{1}{2}gt^{2}$$ 
+$$x(t)=vt \cos A$$ 
+At Earth's surface the acceleration due to gravity is $g=9.81\text{ m/s}^{2}$. 
+
+a. Suppose the ball is thrown with a velocity $v=20\text{ m/s}$ at an angle of $25^{\circ}$ Use MATLAB to compute how high the ball will go, how far it will go, and how long it will take to hit the ground. 
+
+b. Use the values of v and A given in part a to plot the ball's trajectory; that is, plot h versus x for positive values of h. 
+
+c. Plot the trajectories for $A=45^{\circ}$ corresponding to five values of the initial velocity $v$: 20, 24, 28, 32, and $36\text{ m/s}$. 
+
+\begin{lstlisting}
+g = 9.81;
+
+% --- Part A & B: v = 20 m/s, A = 25 degrees ---
+v0 = 20;
+A_rad = deg2rad(25);
+
+% Compute time to hit ground (when h = 0)
+t_hit = (2 * v0 * sin(A_rad)) / g;
+% Max height occurs at t_hit / 2
+h_max = v0 * (t_hit/2) * sin(A_rad) - 0.5 * g * (t_hit/2)^2;
+x_max = v0 * t_hit * cos(A_rad);
+
+fprintf('Max Height: %.2f m\n', h_max);
+fprintf('Distance Traveled: %.2f m\n', x_max);
+fprintf('Time of Flight: %.2f s\n', t_hit);
+
+% Plot the trajectory
+t = linspace(0, t_hit, 100);
+x = v0 .* t .* cos(A_rad);
+h = v0 .* t .* sin(A_rad) - 0.5 .* g .* t.^2;
+
+figure;
+plot(x, h);
+title('Trajectory (v=20 m/s, A=25^\circ)');
+xlabel('Distance (m)'); ylabel('Height (m)');
+grid on;
+
+% --- Part C: A = 45 degrees, multiple velocities ---
+A2_rad = deg2rad(45);
+v_vals = [20, 24, 28, 32, 36];
+
+figure; hold on;
+for v = v_vals
+    t_end = (2 * v * sin(A2_rad)) / g;
+    t_vec = linspace(0, t_end, 100);
+    x_vec = v .* t_vec .* cos(A2_rad);
+    h_vec = v .* t_vec .* sin(A2_rad) - 0.5 .* g .* t_vec.^2;
+    plot(x_vec, h_vec, 'DisplayName', sprintf('v = %d m/s', v));
+end
+hold off;
+title('Trajectories for A=45^\circ');
+xlabel('Distance (m)'); ylabel('Height (m)');
+legend('show'); grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 22}
+When a constant voltage was applied to a certain motor initially at rest, its rotational speed s (t) versus time was measured. 
+The data appear in the following table: 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|}
+\hline
+Time (sec) & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 10 \\
+\hline
+Speed (rpm) & 1210 & 1866 & 2301 & 2564 & 2724 & 2881 & 2879 & 2915 & 3010 \\
+\hline
+\end{tabular}
+\end{table} 
+
+Determine whether the following function can describe the data. If so, find the values of the constants b and c. 
+$$s(t)=b(1-e^{ct})$$
+
+
+\begin{lstlisting}
+% Experimental Data
+t = [1 2 3 4 5 6 7 8 10];
+s = [1210 1866 2301 2564 2724 2881 2879 2915 3010];
+
+% Use fminsearch to find the best fit for b and c
+% Cost function minimizes the sum of squared errors
+cost_func = @(p) sum((p(1)*(1 - exp(p(2).*t)) - s).^2);
+
+% Initial guess: b=3100 (asymptote), c=-0.3 (decay rate)
+p_opt = fminsearch(cost_func, [3100, -0.3]);
+b = p_opt(1);
+c = p_opt(2);
+
+fprintf('Fitted Constants: b = %.2f, c = %.4f\n', b, c);
+
+% Plot original data vs. fitted curve
+t_fit = linspace(0, 10, 100);
+s_fit = b * (1 - exp(c * t_fit));
+
+figure;
+plot(t, s, 'ro', t_fit, s_fit, 'b-');
+title('Motor Speed vs. Time Fit');
+xlabel('Time (sec)'); ylabel('Speed (rpm)');
+legend('Measured Data', 'Fitted Curve');
+grid on;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 32}
+Create a polar plot of the following function for the range $0\le\theta\le2\pi.$ 
+$$r=6 \cos^{2}(0.8\theta)+\theta$$ 
+
+\begin{lstlisting}
+theta = 0 : 0.01 : 2*pi;
+r = 6 .* cos(0.8 .* theta).^2 + theta;
+
+figure;
+polarplot(theta, r);
+title('Polar Plot of r = 6\cos^2(0.8\theta) + \theta');
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 36}
+Planets and planetary satellites move in elliptical orbits. A certain ellipse centered at the origin has the equation 
+$$x^{2}+\frac{y^{2}}{4}=1$$ 
+Another ellipse, also centered at the origin, is rotated relative to the first ellipse. Its equation is 
+$$0.5833x^{2}-0.2887xy+0.4167y^{2}=1$$ 
+We want to find all points where the ellipses intersect.
+Use the fimplicit function and the hold command to plot both ellipses on the same plot.
+Since both ellipses are centered at the origin, if they intersect they will intersect at four points, so you will need to use the ginput function for four points. 
+
+
+\begin{lstlisting}
+% Define equations as anonymous functions
+eq1 = @(x,y) x.^2 + (y.^2)./4 - 1;
+eq2 = @(x,y) 0.5833.*x.^2 - 0.2887.*x.*y + 0.4167.*y.^2 - 1;
+
+figure;
+fimplicit(eq1, [-3 3 -3 3], 'b');
+hold on;
+fimplicit(eq2, [-3 3 -3 3], 'r');
+grid on; axis equal;
+title('Intersection of Ellipses');
+legend('Ellipse 1', 'Ellipse 2');
+
+% Allow user to click the 4 intersection points on the graph
+disp('Click the 4 intersection points on the plot...');
+[x_int, y_int] = ginput(4);
+
+fprintf('Approximate Intersections:\n');
+for i = 1:4
+    fprintf('(%.2f, %.2f)\n', x_int(i), y_int(i));
+end
+hold off;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 37}
+The popular amusement ride known as the corkscrew has a helical shape. 
+The parametric equations for a circular helix are
+$$x=a \cos(t)$$ 
+$$y=a \sin(t)$$ 
+$$z=bt$$ 
+where a is the radius of the helical path and b is a constant that determines the "tightness" of the path. 
+In addition, if $b>0$ the helix has the shape of a right-handed screw; if $b<0$, the helix is left-handed. 
+Obtain the three-dimensional plot of the helix for the following three cases and compare their appearance with one another. 
+Use $0< t <10\pi$ and $a=1$. 
+
+a. $b=0.1$ 
+
+b. $b=0.2$ 
+
+c. $b=-0.1$ 
+
+
+\begin{lstlisting}
+t = 0 : 0.01 : 10*pi;
+a = 1;
+b_cases = [0.1, 0.2, -0.1];
+
+figure;
+for i = 1:3
+    b = b_cases(i);
+    x = a .* cos(t);
+    y = a .* sin(t);
+    z = b .* t;
+    
+    subplot(1, 3, i);
+    plot3(x, y, z);
+    grid on;
+    title(sprintf('Helix with b = %.1f', b));
+    xlabel('x'); ylabel('y'); zlabel('z');
+end
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 42}
+A square metal plate is heated to $80^{\circ}C$ at the corner corresponding to $x=y=1$ The temperature distribution in the plate is described by 
+$$T=80e^{-(x-1)^{2}}e^{-3(y-1)^{2}}$$
+Obtain the surface and contour plots for the temperature. Label each axis.
+What is the temperature at the corner corresponding to $x=y=0$ 
+
+\begin{lstlisting}
+[X, Y] = meshgrid(0 : 0.05 : 2);
+T = 80 .* exp(-(X-1).^2) .* exp(-3.*(Y-1).^2);
+
+figure;
+% Surface Plot
+subplot(1, 2, 1);
+surf(X, Y, T);
+title('Temperature Surface Plot');
+xlabel('x'); ylabel('y'); zlabel('T (C^\circ)');
+
+% Contour Plot
+subplot(1, 2, 2);
+contour(X, Y, T);
+title('Temperature Contour Plot');
+xlabel('x'); ylabel('y');
+grid on; axis equal;
+
+% Calculate Temperature at origin (0,0)
+T_origin = 80 * exp(-(0-1)^2) * exp(-3*(0-1)^2);
+fprintf('The temperature at (0,0) is %.4f C.\n', T_origin);
+\end{lstlisting}
+%-----------------------------------
