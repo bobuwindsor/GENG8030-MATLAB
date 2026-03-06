@@ -1,0 +1,313 @@
+\section{Core Concepts: Function Discovery and Regression}
+Model building (function discovery) is the systematic technique of finding a mathematical equation that best fits empirical data. In MATLAB, this is typically done using regression, also known as the least-squares method.
+
+\subsection{The Least Squares Criterion}
+The least-squares method minimizes the sum of the squares of the residuals, denoted as $J$. 
+$$J = \sum_{i=1}^{m} [f(x_i) - y_i]^2$$
+When comparing models, the function that yields the smallest $J$ value generally provides the best fit.
+
+\subsection{Evaluating Quality of Fit}
+To determine how well a model represents the data, we compute the coefficient of determination, $r^2$:
+$$S = \sum_{i=1}^{m} (y_i - \bar{y})^2 \quad \text{and} \quad r^2 = 1 - \frac{J}{S}$$
+* $S$ indicates the total spread of the data around its mean.
+* $J/S$ indicates the fractional variation \textit{unaccounted} for by the model.
+* A perfect fit has $J=0$ and $r^2=1$. A good engineering fit typically accounts for at least 99\% of the variation ($r^2 \ge 0.99$).
+
+\section{Data Transformations for \texttt{polyfit}}
+The \texttt{polyfit(x, y, n)} command easily fits linear functions ($n=1$) and higher-degree polynomials. However, it can also be used to fit exponential and power functions by transforming the data first.
+
+\begin{itemize}
+    \item \textbf{Linear Function} ($y = mx + b$): 
+    \begin{lstlisting}
+p = polyfit(x, y, 1); % p(1) is m, p(2) is b
+    \end{lstlisting}
+    \item \textbf{Power Function} ($y = bx^m$): Forms a straight line on log-log axes. Taking the $\log_{10}$ of both sides yields $\log_{10} y = m \log_{10} x + \log_{10} b$.
+    \begin{lstlisting}
+p = polyfit(log10(x), log10(y), 1);
+m = p(1); b = 10^p(2);
+    \end{lstlisting}
+    \item \textbf{Exponential Function} ($y = b(10)^{mx}$ or $y = be^{cx}$): Forms a straight line on semilog axes. 
+    \begin{lstlisting}
+p = polyfit(x, log10(y), 1);
+m = p(1); b = 10^p(2);
+% Or using natural log for y = b*exp(c*x):
+p = polyfit(x, log(y), 1); 
+c = p(1); b = exp(p(2));
+    \end{lstlisting}
+\end{itemize}
+
+\section{Multiple Linear and Linear-in-Parameters Regression}
+When a model has multiple variables (e.g., $y = a_0 + a_1x_1 + a_2x_2$) or is linear with respect to its parameters (e.g., $v(t) = a_1 + a_2e^{-t}$), you can bypass \texttt{polyfit} and use matrix left division (\texttt{\textbackslash}).
+
+You set up an overdetermined system $X\mathbf{a} = \mathbf{y}$, where columns of $X$ represent the evaluated variables.
+\begin{lstlisting}
+X = [ones(length(x1), 1), x1, x2];
+a = X \ y; % Solves for the coefficient matrix a
+\end{lstlisting}
+
+\section{Best Practices and Common Pitfalls}
+\begin{itemize}
+    \item \textbf{Overfitting with Polynomials:} Beware of using polynomials of high degree (e.g., $n \ge 5$). While they might pass perfectly through every data point, they often exhibit wild, mathematically unphysical oscillations between the points (Runge's phenomenon).
+    \item \textbf{Ill-Conditioned Polynomials (Scaling):} If the range of $x$ is very large (e.g., years like 2000 to 2010), \texttt{polyfit} may throw a "badly conditioned" warning. \textbf{Pitfall fix:} Scale the data by subtracting a base value (e.g., $x_{\text{scaled}} = x - 2000$) or dividing by a maximum value before fitting.
+    \item \textbf{Log Scale Limitations:} You cannot plot or transform numbers $\le 0$ on a log scale. When using \texttt{log10()} for function discovery, ensure all data points are strictly positive.
+\end{itemize}
+
+%-----------------------------------
+\vspace{0.5cm}
+\hrule
+
+\section*{Tutorial Problems}
+
+%-----------------------------------
+\myproblem{Problem 6}
+The useful life of a machine bearing depends on its operating temperature, as the following data show. Obtain a functional description of these data. Plot the function and the data on the same plot. Estimate a bearing's life if it operates at $150^\circ F$
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccccccc}
+Temperature ($^\circ F$) & 100 & 120 & 140 & 160 & 180 & 200 & 220 \\
+Bearing life $(hours\times10^3)$ & 28 & 21 & 15 & 11 & 8 & 6 & 4 \\
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}
+T = [100, 120, 140, 160, 180, 200, 220];
+L = [28, 21, 15, 11, 8, 6, 4];
+
+% The data suggests an exponential decay: L = b * exp(m*T)
+% Taking natural log: ln(L) = m*T + ln(b)
+p = polyfit(T, log(L), 1);
+m = p(1);
+b = exp(p(2));
+
+fprintf('Model: L = %.4f * exp(%.4f * T)\n', b, m);
+
+% Estimate life at 150 F
+L_150 = b * exp(m * 150);
+fprintf('Estimated life at 150 F: %.2f x 10^3 hours\n', L_150);
+
+% Plotting
+T_fit = linspace(100, 220, 100);
+L_fit = b * exp(m * T_fit);
+
+figure;
+plot(T, L, 'ro', 'MarkerFaceColor', 'r'); hold on;
+plot(T_fit, L_fit, 'b-', 'LineWidth', 1.5);
+title('Bearing Life vs. Temperature');
+xlabel('Temperature (^\circF)'); ylabel('Life (hours x 10^3)');
+legend('Measured Data', 'Exponential Fit');
+grid on; hold off;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 7}
+A certain electric circuit has a resistor and a capacitor. The capacitor is initially charged to 100 V. When the power supply is detached, the capacitor voltage decays with time, as the following data table shows. Find a functional description of the capacitor voltage v as a function of time t. Plot the function and the data on the same plot.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccccccccc}
+Time (s) & 0 & 0.5 & 1 & 1.5 & 2 & 2.5 & 3 & 3.5 & 4 \\
+Voltage (V) & 100 & 62 & 38 & 21 & 13 & 7 & 4 & 2 & 3 \\
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}
+t = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+V = [100, 62, 38, 21, 13, 7, 4, 2, 3];
+
+% Exponential decay circuit model: V = V0 * exp(c*t)
+% ln(V) = c*t + ln(V0)
+p = polyfit(t, log(V), 1);
+c = p(1);
+V0 = exp(p(2));
+
+fprintf('Model: V(t) = %.4f * exp(%.4f * t)\n', V0, c);
+
+% Plotting
+t_fit = linspace(0, 4, 100);
+V_fit = V0 * exp(c * t_fit);
+
+figure;
+plot(t, V, 'ko', 'MarkerFaceColor', 'k'); hold on;
+plot(t_fit, V_fit, 'r-', 'LineWidth', 1.5);
+title('Capacitor Voltage Decay');
+xlabel('Time (s)'); ylabel('Voltage (V)');
+legend('Data', 'Fitted Model');
+grid on; hold off;
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 9}
+The following data give the drying time of a certain paint as a function of the amount of a certain additive A.
+a. Find the first-, second-, third-, and fourth-degree polynomials that fit the data, and plot each polynomial with the data. Determine the quality of the curve fit for each by computing J, S, and $r^2$.
+b. Use the polynomial giving the best fit to estimate the amount of additive that minimizes the drying time.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccccccccc}
+A (oz) & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+T (min) & 130 & 115 & 110 & 90 & 89 & 89 & 95 & 100 & 110 & 125 \\
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}
+A = 0:9;
+T = [130, 115, 110, 90, 89, 89, 95, 100, 110, 125];
+
+S = sum((T - mean(T)).^2);
+colors = ['r', 'g', 'b', 'm'];
+
+figure; hold on;
+plot(A, T, 'ko', 'MarkerFaceColor', 'k', 'DisplayName', 'Data');
+
+r2_vals = zeros(1, 4);
+
+% Part A: Evaluate 1st through 4th degree polynomials
+for n = 1:4
+    p = polyfit(A, T, n);
+    T_est = polyval(p, A);
+    J = sum((T_est - T).^2);
+    r2_vals(n) = 1 - J/S;
+    
+    fprintf('Degree %d: J = %.2f, S = %.2f, r^2 = %.4f\n', n, J, S, r2_vals(n));
+    
+    A_fit = linspace(0, 9, 100);
+    plot(A_fit, polyval(p, A_fit), colors(n), 'DisplayName', sprintf('Degree %d', n));
+end
+title('Drying Time vs. Additive Amount');
+xlabel('Additive A (oz)'); ylabel('Drying Time T (min)');
+legend('show'); grid on; hold off;
+
+% Part B: The 4th degree polynomial yields the highest r^2
+[~, best_degree] = max(r2_vals);
+p_best = polyfit(A, T, best_degree);
+
+% Find the minimum of the best fit polynomial using fminbnd
+A_min = fminbnd(@(x) polyval(p_best, x), 0, 9);
+T_min = polyval(p_best, A_min);
+
+fprintf('\nThe best fit is degree %d.\n', best_degree);
+fprintf('Minimum drying time occurs at A = %.3f oz (Time = %.3f min).\n', A_min, T_min);
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 12}
+Obtain a linear model $y = a_0 + a_1x_1 + a_2x_2$ for the following data to describe the relationship.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+y & $x_1$ & $x_2$ \\
+2.85 & 10 & 8 \\
+4.2 & 16 & 12 \\
+4.5 & 18 & 14 \\
+3.75 & 22 & 24 \\
+4.35 & 26 & 28 \\
+4.2 & 28 & 34 \\
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}
+y = [2.85; 4.2; 4.5; 3.75; 4.35; 4.2];
+x1 = [10; 16; 18; 22; 26; 28];
+x2 = [8; 12; 14; 24; 28; 34];
+
+% Create the design matrix X for multiple linear regression
+% First column is 1s for the intercept a0
+X = [ones(length(y), 1), x1, x2];
+
+% Solve for the coefficients using matrix left division
+a = X \ y;
+
+fprintf('The linear model coefficients are:\n');
+fprintf('a0 = %.4f\n', a(1));
+fprintf('a1 = %.4f\n', a(2));
+fprintf('a2 = %.4f\n', a(3));
+fprintf('Model: y = %.4f + %.4f*x1 + %.4f*x2\n', a(1), a(2), a(3));
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 17}
+The following function is linear in the parameters $a_1$ and $a_2$,.
+$$y(x) = a_1 + a_2\ln(x)$$
+Use least-squares regression with the following data to estimate the values of $a_1$ and $a_2$. Use the curve fit to estimate the values of y at $x=2.5$ and at $x=11$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccccccccc}
+X & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+y & 15 & 21 & 24 & 27 & 28 & 30 & 31.5 & 33 & 34.5 & 34.5 \\
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}
+x = 1:10;
+y = [15, 21, 24, 27, 28, 30, 31.5, 33, 34.5, 34.5];
+
+% Let w = ln(x). The equation becomes y = a2*w + a1
+% We can use polyfit to find the coefficients
+p = polyfit(log(x), y, 1);
+
+a2 = p(1); % The slope corresponds to a2
+a1 = p(2); % The intercept corresponds to a1
+
+fprintf('Estimated Parameters:\n');
+fprintf('a1 = %.4f\n', a1);
+fprintf('a2 = %.4f\n', a2);
+
+% Estimate y at x = 2.5 and x = 11
+y_2_5 = a1 + a2 * log(2.5);
+y_11 = a1 + a2 * log(11);
+
+fprintf('Estimated y at x = 2.5 is %.4f\n', y_2_5);
+fprintf('Estimated y at x = 11 is %.4f\n', y_11);
+\end{lstlisting}
+
+%-----------------------------------
+\myproblem{Problem 22}
+Consider the following data. Find the best-fit line that passes through the point $x_0 = 10$, $y_0 = 20$.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+X & 0 & 5 & 10 \\
+y & 0.4 & 9.7 & 20 \\
+\end{tabular}
+\end{table}
+
+\begin{lstlisting}
+x = [0; 5; 10];
+y = [0.4; 9.7; 20];
+
+% A line has the equation y = m*x + b.
+% If it must pass through (10, 20), then 20 = m*10 + b, so b = 20 - 10*m
+% Substituting this back: y = m*x + 20 - 10*m
+% y - 20 = m * (x - 10)
+% Let Y_prime = y - 20 and X_prime = x - 10
+% The model is forced through the origin: Y_prime = m * X_prime
+
+X_prime = x - 10;
+Y_prime = y - 20;
+
+% Perform a constrained least-squares regression (matrix left division)
+m = X_prime \ Y_prime;
+
+% Calculate the corresponding intercept b
+b = 20 - 10 * m;
+
+fprintf('The best-fit line passing through (10, 20) is:\n');
+fprintf('y = %.4f*x + %.4f\n', m, b);
+
+% Plot to verify
+x_fit = linspace(0, 12, 100);
+y_fit = m * x_fit + b;
+
+figure;
+plot(x, y, 'ko', 'MarkerFaceColor', 'k'); hold on;
+plot(x_fit, y_fit, 'r-');
+plot(10, 20, 'bp', 'MarkerSize', 10, 'MarkerFaceColor', 'b'); % Highlight constraint point
+title('Constrained Linear Regression');
+xlabel('X'); ylabel('y');
+legend('Data', 'Constrained Best-Fit Line', '(10, 20) Point');
+grid on; hold off;
+\end{lstlisting}
