@@ -261,6 +261,9 @@ s = [1210 1866 2301 2564 2724 2881 2879 2915 3010];
 
 % Use fminsearch to find the best fit for b and c
 % Cost function minimizes the sum of squared errors
+% p = [b, c]
+% p(1) = b
+% p(2) = c
 cost_func = @(p) sum((p(1)*(1 - exp(p(2).*t)) - s).^2);
 
 % Initial guess: b=3100 (asymptote), c=-0.3 (decay rate)
@@ -282,6 +285,10 @@ legend('Measured Data', 'Fitted Curve');
 grid on;
 \end{lstlisting}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/t5_22.png}
+\end{figure}
 %-----------------------------------
 \myproblem{Problem 32}
 Create a polar plot of the following function for the range $0\le\theta\le2\pi.$ 
