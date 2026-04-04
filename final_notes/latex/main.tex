@@ -1,0 +1,412 @@
+\documentclass[12pt]{article}
+\usepackage[top=0.5in, left=1in, right=1in, bottom=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{longtable}
+\graphicspath{{images/}{../notes/latex/images/}}
+
+\definecolor{tutorialsix}{RGB}{166,32,32}
+\definecolor{tutorialsixbg}{RGB}{252,239,239}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+}
+
+\newcommand{\tutorialsection}[2]{%
+    \clearpage
+    \phantomsection
+    \hypertarget{#1}{}%
+    \section*{#2}
+}
+
+\newcommand{\highlighttutorialsection}[2]{%
+    \clearpage
+    \phantomsection
+    \hypertarget{#1}{}%
+    \section*{\colorbox{tutorialsixbg}{\parbox{\dimexpr\linewidth-2\fboxsep}{\centering\color{tutorialsix}\textbf{#2}}}}
+}
+
+\newcommand{\question}[3]{%
+    \phantomsection
+    \hypertarget{#1}{}%
+    \subsection*{#2}
+    #3
+}
+
+\newcommand{\minitoc}[1]{%
+    \noindent\textbf{Questions in this tutorial}
+    \begin{itemize}[leftmargin=1.5em, itemsep=0.2em]
+        #1
+    \end{itemize}
+}
+
+\begin{document}
+\pagestyle{empty}
+
+% ===== COVER PAGE =====
+\noindent
+\begin{minipage}[c]{0.5\textwidth}
+GENG-8030
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.3\textwidth}
+\raggedleft
+\includegraphics[height=2.5cm]{./images/uwindsor_logo.png}
+\end{minipage}
+
+\vspace{-0.3cm}
+\noindent\rule{\textwidth}{0.8pt}
+
+\vspace{2cm}
+
+\begin{center}
+{\fontsize{30}{36}\selectfont University of Windsor}\\[0.3cm]
+{\large Department of Electrical and Computer Engineering}
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+{\LARGE \textbf{GENG-8030 - MATLAB}}\\[0.5cm]
+{\Large Course Notes --- Final Exam Review Lite}
+\end{center}
+
+\vspace{2.5cm}
+
+\begin{center}
+\begin{tabular}{r l}
+\textbf{Student:} & Bob - LUO\\[0.3cm]
+\textbf{Instructor:} & Prof.\ Yasser Alginahi\\[0.3cm]
+\textbf{Term:} & Winter 2026 \\
+\end{tabular}
+\end{center}
+
+\vfill
+\begin{center}
+{\small University of Windsor}
+\end{center}
+
+\newpage
+\pagestyle{plain}
+
+\section*{Table of Contents}
+\begin{itemize}[leftmargin=1.5em, itemsep=0.35em]
+    \item \hyperlink{tut2}{Tutorial 02: Numeric, Cell and Structure Arrays}
+    \item \hyperlink{tut3}{Tutorial 03: Functions}
+    \item \hyperlink{tut4}{Tutorial 04: Programming with MATLAB}
+    \item \hyperlink{tut5}{Tutorial 05: Advanced Plotting}
+    \item \hyperlink{tut6}{\textcolor{tutorialsix}{Tutorial 06: Model Building and Regression}}
+    \item \hyperlink{tut7}{Tutorial 07: Statistics, Probability, and Interpolation}
+    \item \hyperlink{tut8}{Tutorial 08: Linear Algebraic Equations}
+    \item \hyperlink{tut9}{Tutorial 09: Numerical Methods}
+    \item \hyperlink{tut10}{Tutorial 10: Simulink}
+\end{itemize}
+
+\tutorialsection{tut2}{Tutorial 02: Numeric, Cell and Structure Arrays}
+\minitoc{
+    \item \hyperlink{tut2-q27}{Problem 27: springs, compression, and stored energy}
+    \item \hyperlink{tut2-q41}{Problem 41: solve a linear system by left division}
+}
+
+\question{tut2-q27}{Problem 27}{%
+The potential energy stored in a spring is $kx^{2}/2$, where $k$ is the spring constant and $x$ is the compression in the spring. The force required to compress the spring is $kx$. The following table gives the data for five springs. Use MATLAB to find:
+\begin{enumerate}[label=\alph*.]
+    \item the compression $x$ in each spring;
+    \item the potential energy stored in each spring.
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.2in}ccccc}
+\toprule
+Spring & 1 & 2 & 3 & 4 & 5 \\
+\midrule
+Force (N) & 11 & 7 & 8 & 10 & 9 \\
+Spring constant $k$ (N/m) & 1000 & 600 & 900 & 1300 & 700 \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\question{tut2-q41}{Problem 41}{%
+Solve the following problem using the left-division method:
+\[
+\begin{aligned}
+6x - 3y + 4z &= 41,\\
+12x + 5y - 7z &= -26,\\
+-5x + 2y - 6z &= 16.
+\end{aligned}
+\]
+}
+
+\tutorialsection{tut3}{Tutorial 03: Functions}
+\minitoc{
+    \item \hyperlink{tut3-q17}{Problem 17: conical paper cup area minimization}
+    \item \hyperlink{tut3-q25}{Problem 25: anonymous function and minimum search}
+}
+
+\question{tut3-q17}{Problem 17}{%
+The volume $V$ and paper surface area $A$ of a conical paper cup are given by
+\[
+V = \frac{1}{3}\pi r^{2}h,
+\qquad
+A = \pi r\sqrt{r^{2} + h^{2}},
+\]
+where $r$ is the radius of the base of the cone and $h$ is the height of the cone.
+\begin{enumerate}[label=\alph*.]
+    \item By eliminating $h$, obtain the expression for $A$ as a function of $r$ and $V$.
+    \item Create a user-defined function that accepts $r$ as the only argument and computes $A$ for a given value of $V$. Declare $V$ to be global within the function.
+    \item For $V = 10~\text{in}^{3}$, use the function with \texttt{fminbnd} to compute the value of $r$ that minimizes the area $A$. What is the corresponding value of the height $h$? Investigate the sensitivity of the solution by plotting $A$ versus $r$. How much can $r$ vary about its optimal value before the area increases $10\%$ above its minimum value?
+\end{enumerate}
+}
+
+\question{tut3-q25}{Problem 25}{%
+Create an anonymous function for $30x^{2} - 300x + 4$ and use it:
+\begin{enumerate}[label=\alph*.]
+    \item to plot the function and determine the approximate location of its minimum;
+    \item with the \texttt{fminbnd} function to precisely determine the location of the minimum.
+\end{enumerate}
+}
+
+\tutorialsection{tut4}{Tutorial 04: Programming with MATLAB}
+\minitoc{
+    \item \hyperlink{tut4-q9}{Problem 9: compare two stock-price arrays}
+    \item \hyperlink{tut4-q40}{Problem 40: cable tensions and feasible cable length}
+}
+
+\question{tut4-q9}{Problem 9}{%
+The arrays \texttt{price\_A} and \texttt{price\_B} given below contain the price in dollars of two stocks over 10 days. Use MATLAB to determine how many days the price of stock A was below the price of stock B.
+\[
+\texttt{price\_A = [19, 18, 22, 21, 25, 19, 17, 21, 27, 29]}
+\]
+\[
+\texttt{price\_B = [22, 17, 20, 23, 24, 18, 16, 25, 28, 27]}
+\]
+}
+
+\question{tut4-q40}{Problem 40}{%
+A weight $W$ is supported by two cables anchored a distance $D$ apart (see Figure P40). The cable length $L_{AB}$ is given, but the length $L_{AC}$ is to be selected. Each cable can support a maximum tension force equal to $W$. For the weight to remain stationary, the total horizontal force and total vertical force must each be zero. This principle gives the equations
+\[
+-T_{AB}\cos\theta + T_{AC}\cos\phi = 0,
+\qquad
+T_{AB}\sin\theta + T_{AC}\sin\phi = W.
+\]
+We can solve these equations for the tension forces $T_{AB}$ and $T_{AC}$ if we know the angles $\theta$ and $\phi$. From the law of cosines,
+\[
+\theta = \cos^{-1}\!\left(\frac{D^{2} + L_{AB}^{2} - L_{AC}^{2}}{2DL_{AB}}\right).
+\]
+From the law of sines,
+\[
+\phi = \sin^{-1}\!\left(\frac{L_{AB}\sin\theta}{L_{AC}}\right).
+\]
+For the given values $D = 6~\text{ft}$, $L_{AB} = 3~\text{ft}$, and $W = 2000~\text{lb}$, use a \texttt{while} loop in MATLAB to find $L_{AC,\min}$, the shortest length $L_{AC}$ that can be used without $T_{AB}$ or $T_{AC}$ exceeding $2000~\text{lb}$. Note that the largest $L_{AC}$ can be is $6.7~\text{ft}$ (which corresponds to $\theta = 90^\circ$). Plot the tension forces $T_{AB}$ and $T_{AC}$ on the same graph versus $L_{AC}$ for $L_{AC,\min} < L_{AC} < 6.7$.
+}
+
+\tutorialsection{tut5}{Tutorial 05: Advanced Plotting}
+\minitoc{
+    \item \hyperlink{tut5-q19}{Problem 19*: projectile height and trajectory plots}
+    \item \hyperlink{tut5-q42}{Problem 42: surface and contour plots of a temperature field}
+}
+
+\question{tut5-q19}{Problem 19*}{%
+The height $h(t)$ and horizontal distance $x(t)$ traveled by a ball thrown at an angle $A$ with a speed $v$ are given by
+\[
+h(t) = vt\sin A - \frac{1}{2}gt^{2},
+\qquad
+x(t) = vt\cos A.
+\]
+At Earth's surface the acceleration due to gravity is $g = 9.81~\text{m/s}^{2}$.
+\begin{enumerate}[label=\alph*.]
+    \item Suppose the ball is thrown with a velocity $v = 20~\text{m/s}$ at an angle of $25^\circ$. Use MATLAB to compute how high the ball will go, how far it will go, and how long it will take to hit the ground.
+    \item Use the values of $v$ and $A$ given in part (a) to plot the ball's trajectory; that is, plot $h$ versus $x$ for positive values of $t$.
+    \item Plot the trajectories for $A = 45^\circ$ corresponding to five values of the initial velocity $v$: 20, 24, 28, 32, and 36 m/s.
+\end{enumerate}
+}
+
+\question{tut5-q42}{Problem 42}{%
+A square metal plate is heated to $80^\circ$C at the corner corresponding to $x = y = 1$. The temperature distribution in the plate is described by
+\[
+T = 80e^{-(x-1)^{2} - 3(y-1)^{2}}.
+\]
+Obtain the surface and contour plots for the temperature. Label each axis. What is the temperature at the corner corresponding to $x = y = 0$?
+}
+
+\highlighttutorialsection{tut6}{Tutorial 06: Model Building and Regression}
+\minitoc{
+    \item \hyperlink{tut6-q7}{Problem 7: capacitor-voltage regression from data}
+    \item \hyperlink{tut6-q9}{Problem 9: polynomial curve fits for drying time}
+}
+
+\question{tut6-q7}{Problem 7}{%
+A certain electric circuit has a resistor and a capacitor. The capacitor is initially charged to $100$ V. When the power supply is detached, the capacitor voltage decays with time, as the following data table shows. Find a functional description of the capacitor voltage $v$ as a function of time $t$. Plot the function and the data on the same plot.
+
+\begin{center}
+\begin{tabular}{cccccccccc}
+\toprule
+Time (s) & 0 & 0.5 & 1 & 1.5 & 2 & 2.5 & 3 & 3.5 & 4 \\
+\midrule
+Voltage (V) & 100 & 62 & 38 & 21 & 13 & 7 & 4 & 2 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\question{tut6-q9}{Problem 9}{%
+The following data give the drying time $T$ of a certain paint as a function of the amount of a certain additive $A$.
+\begin{enumerate}[label=\alph*.]
+    \item Find the first-, second-, third-, and fourth-degree polynomials that fit the data, and plot each polynomial with the data. Determine the quality of the curve fit for each by computing $J$, $S$, and $r$.
+    \item Use the polynomial giving the best fit to estimate the amount of additive that minimizes the drying time.
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{ccccccccccc}
+\toprule
+$A$ (oz) & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+\midrule
+$T$ (min) & 130 & 115 & 110 & 90 & 89 & 89 & 95 & 100 & 110 & 125 \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\tutorialsection{tut7}{Tutorial 07}
+\minitoc{
+    \item \hyperlink{tut7-q27}{Problem 27: linear interpolation with missing temperatures}
+}
+
+\question{tut7-q27}{Problem 27}{%
+The following table gives temperature data in $^\circ$C as a function of time of day and day of the week at a specific location. Data are missing for the entries marked with a question mark (?). Use linear interpolation with MATLAB to estimate the temperature at the missing points.
+
+\begin{center}
+\begin{tabular}{cccccc}
+\toprule
+Hour & Mon & Tues & Wed & Thurs & Fri \\
+\midrule
+1 & 16 & 15 & 12 & 17 & 16 \\
+2 & 13 & ? & 8 & 11 & 12 \\
+3 & 14 & 15 & 9 & ? & 15 \\
+4 & 17 & 15 & 14 & 17 & 19 \\
+5 & 21 & 18 & 19 & 20 & 24 \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\tutorialsection{tut8}{Tutorial 08}
+\minitoc{
+    \item \hyperlink{tut8-q16}{Problem 16: traffic-flow solvability and sensor placement}
+    \item \hyperlink{tut8-q22}{Problem 22: interpolate quadratic and cubic polynomials}
+}
+
+\question{tut8-q16}{Problem 16}{%
+See Figure P16. Assume that no vehicles stop within the network. A traffic engineer wants to know if the traffic flows can be computed given the measured flows shown in the figure. If not, determine how many more traffic sensors need to be installed, and obtain the expressions for the other traffic flows in terms of the measured quantities.
+}
+
+\question{tut8-q22}{Problem 22}{%
+\begin{enumerate}[label=\alph*.]
+    \item Use MATLAB to find the coefficients of the quadratic polynomial $y = ax^{2} + bx + c$ that passes through the three points $(x,y) = (1,4)$, $(3,73)$, $(5,120)$.
+    \item Use MATLAB to find the coefficients of the cubic polynomial $y = ax^{3} + bx^{2} + cx + d$ that passes through the three points given in part (a).
+\end{enumerate}
+}
+
+\tutorialsection{tut9}{Tutorial 09: Numerical Methods}
+\minitoc{
+    \item \hyperlink{tut9-q44}{Problem 44: initial and step responses from a state model}
+    \item \hyperlink{tut9-q45}{Problem 45: free, step, and total response of a second-order system}
+}
+
+\question{tut9-q44}{Problem 44}{%
+The following state model describes the motion of a certain mass connected to a spring, with viscous friction on the surface, where $m = 1$, $c = 2$, and $k = 5$:
+\[
+\begin{bmatrix}
+\dot{x}_{1} \\
+\dot{x}_{2}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & 1 \\
+-5 & -2
+\end{bmatrix}
+\begin{bmatrix}
+x_{1} \\
+x_{2}
+\end{bmatrix}
++
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+f(t).
+\]
+\begin{enumerate}[label=\alph*.]
+    \item Use the \texttt{initial} function to plot the position $x_{1}$ of the mass if the initial position is $5$ and the initial velocity is $3$.
+    \item Use the \texttt{step} function to plot the step response of the position and velocity for zero initial conditions, where the magnitude of the step input is $10$. Compare your plot with the figure shown in the tutorial sheet.
+\end{enumerate}
+}
+
+\question{tut9-q45}{Problem 45}{%
+Consider the following equation:
+\[
+5\ddot{y} + 2\dot{y} + 10y = f(t).
+\]
+\begin{enumerate}[label=\alph*.]
+    \item Plot the free response for the initial conditions $y(0) = 10$ and $\dot{y}(0) = -5$.
+    \item Plot the unit-step response for zero initial conditions.
+    \item The total response to a step input is the sum of the free response and the step response. Demonstrate this fact for this equation by plotting the sum of the solutions found in parts (a) and (b) and comparing the plot with that generated by solving for the total response with $y(0) = 10$ and $\dot{y}(0) = -5$.
+\end{enumerate}
+}
+
+\tutorialsection{tut10}{Tutorial 10: Simulink}
+\minitoc{
+    \item \hyperlink{tut10-q8}{Problem 8: second-order ODE with sinusoidal forcing}
+    \item \hyperlink{tut10-q15}{Problem 15: coupled first-order system with sinusoidal input}
+    \item \hyperlink{tut10-q13}{Problem 13: coupled first-order system with ramp input}
+}
+
+\question{tut10-q8}{Problem 8}{%
+Create a Simulink model to plot the solution of the following equation for $0 < t < 6$:
+\[
+10\ddot{y} = 7\sin(4t) + 5\cos(3t),
+\qquad
+y(0) = 3,
+\qquad
+\dot{y}(0) = 2.
+\]
+}
+
+\question{tut10-q15}{Problem 15}{%
+Construct a Simulink model to plot the solution of the following equations for $0 < t < 10$:
+\[
+\dot{x} = -5x + 3y + 5\sin(2t),
+\qquad
+x(0) = 0,
+\]
+\[
+\dot{y} = 3x - 4y,
+\qquad
+y(0) = 0.
+\]
+}
+
+\question{tut10-q13}{Problem 13}{%
+Construct a Simulink model to plot the solution of the following equations for $0 < t < 2$:
+\[
+\dot{x}_{1} = -6x_{1} + 4x_{2},
+\]
+\[
+\dot{x}_{2} = 5x_{1} - 7x_{2} + f(t),
+\qquad
+\text{where } f(t) = 3t.
+\]
+Use the Ramp block in the Sources library.
+}
+
+\end{document}
