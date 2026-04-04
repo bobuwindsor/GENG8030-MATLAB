@@ -9,7 +9,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{enumitem}
-\usepackage{longtable}
+\usepackage[framed,numbered]{mcode}
 \graphicspath{{images/}{../notes/latex/images/}}
 
 \definecolor{tutorialsix}{RGB}{166,32,32}
@@ -35,12 +35,13 @@
     \section*{\colorbox{tutorialsixbg}{\parbox{\dimexpr\linewidth-2\fboxsep}{\centering\color{tutorialsix}\textbf{#2}}}}
 }
 
-\newcommand{\question}[3]{%
+\newcommand{\questiontitle}[2]{%
     \phantomsection
     \hypertarget{#1}{}%
     \subsection*{#2}
-    #3
 }
+
+\newcommand{\solutiontitle}{\noindent\textbf{MATLAB Solution}}
 
 \newcommand{\minitoc}[1]{%
     \noindent\textbf{Questions in this tutorial}
@@ -77,7 +78,7 @@ GENG-8030
 
 \begin{center}
 {\LARGE \textbf{GENG-8030 - MATLAB}}\\[0.5cm]
-{\Large Course Notes --- Final Exam Review Lite}
+{\Large Tutorial Questions and MATLAB Solutions}
 \end{center}
 
 \vspace{2.5cm}
@@ -105,8 +106,8 @@ GENG-8030
     \item \hyperlink{tut4}{Tutorial 04: Programming with MATLAB}
     \item \hyperlink{tut5}{Tutorial 05: Advanced Plotting}
     \item \hyperlink{tut6}{\textcolor{tutorialsix}{Tutorial 06: Model Building and Regression}}
-    \item \hyperlink{tut7}{Tutorial 07: Statistics, Probability, and Interpolation}
-    \item \hyperlink{tut8}{Tutorial 08: Linear Algebraic Equations}
+    \item \hyperlink{tut7}{Tutorial 07: Interpolation}
+    \item \hyperlink{tut8}{Tutorial 08: Linear Systems}
     \item \hyperlink{tut9}{Tutorial 09: Numerical Methods}
     \item \hyperlink{tut10}{Tutorial 10: Simulink}
 \end{itemize}
@@ -117,7 +118,7 @@ GENG-8030
     \item \hyperlink{tut2-q41}{Problem 41: solve a linear system by left division}
 }
 
-\question{tut2-q27}{Problem 27}{%
+\questiontitle{tut2-q27}{Problem 27}
 The potential energy stored in a spring is $kx^{2}/2$, where $k$ is the spring constant and $x$ is the compression in the spring. The force required to compress the spring is $kx$. The following table gives the data for five springs. Use MATLAB to find:
 \begin{enumerate}[label=\alph*.]
     \item the compression $x$ in each spring;
@@ -134,9 +135,26 @@ Spring constant $k$ (N/m) & 1000 & 600 & 900 & 1300 & 700 \\
 \bottomrule
 \end{tabular}
 \end{center}
-}
 
-\question{tut2-q41}{Problem 41}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc;
+
+F = [11 7 8 10 9];            % N
+k = [1000 600 900 1300 700];  % N/m
+
+% Compression from F = kx
+x = F ./ k;
+
+% Potential energy in each spring
+PE = 0.5 .* k .* x.^2;
+
+results = table((1:5).', F.', k.', x.', PE.', ...
+    'VariableNames', {'Spring','Force_N','k_N_per_m','Compression_m','PE_J'});
+disp(results);
+\end{lstlisting}
+
+\questiontitle{tut2-q41}{Problem 41}
 Solve the following problem using the left-division method:
 \[
 \begin{aligned}
@@ -145,7 +163,23 @@ Solve the following problem using the left-division method:
 -5x + 2y - 6z &= 16.
 \end{aligned}
 \]
-}
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc;
+
+A = [ 6  -3   4;
+     12   5  -7;
+     -5   2  -6];
+
+b = [41; -26; 16];
+
+solution = A \ b;
+
+fprintf('x = %.6f\n', solution(1));
+fprintf('y = %.6f\n', solution(2));
+fprintf('z = %.6f\n', solution(3));
+\end{lstlisting}
 
 \tutorialsection{tut3}{Tutorial 03: Functions}
 \minitoc{
@@ -153,7 +187,7 @@ Solve the following problem using the left-division method:
     \item \hyperlink{tut3-q25}{Problem 25: anonymous function and minimum search}
 }
 
-\question{tut3-q17}{Problem 17}{%
+\questiontitle{tut3-q17}{Problem 17}
 The volume $V$ and paper surface area $A$ of a conical paper cup are given by
 \[
 V = \frac{1}{3}\pi r^{2}h,
@@ -166,15 +200,77 @@ where $r$ is the radius of the base of the cone and $h$ is the height of the con
     \item Create a user-defined function that accepts $r$ as the only argument and computes $A$ for a given value of $V$. Declare $V$ to be global within the function.
     \item For $V = 10~\text{in}^{3}$, use the function with \texttt{fminbnd} to compute the value of $r$ that minimizes the area $A$. What is the corresponding value of the height $h$? Investigate the sensitivity of the solution by plotting $A$ versus $r$. How much can $r$ vary about its optimal value before the area increases $10\%$ above its minimum value?
 \end{enumerate}
-}
 
-\question{tut3-q25}{Problem 25}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+global V
+
+V = 10;  % in^3
+
+% A(r) after eliminating h:
+% h = 3V/(pi*r^2)
+% A(r) = pi*r*sqrt(r^2 + (3V/(pi*r^2))^2)
+
+[r_opt, A_min] = fminbnd(@cone_area, 0.05, 10);
+h_opt = 3 * V / (pi * r_opt^2);
+
+r = linspace(0.2, 3.0, 500);
+A = cone_area(r);
+target = 1.10 * A_min;
+
+idx = find(A <= target);
+r_low = r(idx(1));
+r_high = r(idx(end));
+
+fprintf('Optimal radius      = %.6f in\n', r_opt);
+fprintf('Corresponding height= %.6f in\n', h_opt);
+fprintf('Minimum area        = %.6f in^2\n', A_min);
+fprintf('10%% area band       = [%.6f, %.6f] in\n', r_low, r_high);
+
+plot(r, A, 'LineWidth', 1.5); hold on;
+plot(r_opt, A_min, 'ro', 'MarkerFaceColor', 'r');
+yline(target, '--k', '110% of minimum');
+grid on;
+xlabel('r (in)');
+ylabel('A(r) (in^2)');
+title('Cone Surface Area vs Radius');
+
+function A = cone_area(r)
+    global V
+    h = 3 * V ./ (pi .* r.^2);
+    A = pi .* r .* sqrt(r.^2 + h.^2);
+end
+\end{lstlisting}
+
+\questiontitle{tut3-q25}{Problem 25}
 Create an anonymous function for $30x^{2} - 300x + 4$ and use it:
 \begin{enumerate}[label=\alph*.]
     \item to plot the function and determine the approximate location of its minimum;
     \item with the \texttt{fminbnd} function to precisely determine the location of the minimum.
 \end{enumerate}
-}
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+f = @(x) 30*x.^2 - 300*x + 4;
+
+x = linspace(-2, 12, 400);
+y = f(x);
+
+[x_min, y_min] = fminbnd(f, -2, 12);
+
+plot(x, y, 'LineWidth', 1.5); hold on;
+plot(x_min, y_min, 'ro', 'MarkerFaceColor', 'r');
+grid on;
+xlabel('x');
+ylabel('f(x)');
+title('f(x) = 30x^2 - 300x + 4');
+
+fprintf('Minimum occurs at x = %.6f\n', x_min);
+fprintf('Minimum value is %.6f\n', y_min);
+\end{lstlisting}
 
 \tutorialsection{tut4}{Tutorial 04: Programming with MATLAB}
 \minitoc{
@@ -182,7 +278,7 @@ Create an anonymous function for $30x^{2} - 300x + 4$ and use it:
     \item \hyperlink{tut4-q40}{Problem 40: cable tensions and feasible cable length}
 }
 
-\question{tut4-q9}{Problem 9}{%
+\questiontitle{tut4-q9}{Problem 9}
 The arrays \texttt{price\_A} and \texttt{price\_B} given below contain the price in dollars of two stocks over 10 days. Use MATLAB to determine how many days the price of stock A was below the price of stock B.
 \[
 \texttt{price\_A = [19, 18, 22, 21, 25, 19, 17, 21, 27, 29]}
@@ -190,10 +286,22 @@ The arrays \texttt{price\_A} and \texttt{price\_B} given below contain the price
 \[
 \texttt{price\_B = [22, 17, 20, 23, 24, 18, 16, 25, 28, 27]}
 \]
-}
 
-\question{tut4-q40}{Problem 40}{%
-A weight $W$ is supported by two cables anchored a distance $D$ apart (see Figure P40). The cable length $L_{AB}$ is given, but the length $L_{AC}$ is to be selected. Each cable can support a maximum tension force equal to $W$. For the weight to remain stationary, the total horizontal force and total vertical force must each be zero. This principle gives the equations
+\solutiontitle
+\begin{lstlisting}
+clear; clc;
+
+price_A = [19, 18, 22, 21, 25, 19, 17, 21, 27, 29];
+price_B = [22, 17, 20, 23, 24, 18, 16, 25, 28, 27];
+
+days_below = price_A < price_B;
+num_days = sum(days_below);
+
+fprintf('Days A was below B = %d\n', num_days);
+\end{lstlisting}
+
+\questiontitle{tut4-q40}{Problem 40}
+A weight $W$ is supported by two cables anchored a distance $D$ apart. The cable length $L_{AB}$ is given, but the length $L_{AC}$ is to be selected. Each cable can support a maximum tension force equal to $W$. For the weight to remain stationary, the total horizontal force and total vertical force must each be zero. This principle gives the equations
 \[
 -T_{AB}\cos\theta + T_{AC}\cos\phi = 0,
 \qquad
@@ -207,8 +315,73 @@ From the law of sines,
 \[
 \phi = \sin^{-1}\!\left(\frac{L_{AB}\sin\theta}{L_{AC}}\right).
 \]
-For the given values $D = 6~\text{ft}$, $L_{AB} = 3~\text{ft}$, and $W = 2000~\text{lb}$, use a \texttt{while} loop in MATLAB to find $L_{AC,\min}$, the shortest length $L_{AC}$ that can be used without $T_{AB}$ or $T_{AC}$ exceeding $2000~\text{lb}$. Note that the largest $L_{AC}$ can be is $6.7~\text{ft}$ (which corresponds to $\theta = 90^\circ$). Plot the tension forces $T_{AB}$ and $T_{AC}$ on the same graph versus $L_{AC}$ for $L_{AC,\min} < L_{AC} < 6.7$.
-}
+For the given values $D = 6~\text{ft}$, $L_{AB} = 3~\text{ft}$, and $W = 2000~\text{lb}$, use a \texttt{while} loop in MATLAB to find $L_{AC,\min}$, the shortest length $L_{AC}$ that can be used without $T_{AB}$ or $T_{AC}$ exceeding $2000~\text{lb}$. Plot the tension forces $T_{AB}$ and $T_{AC}$ on the same graph versus $L_{AC}$ for $L_{AC,\min} < L_{AC} < 6.7$.
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+D = 6;          % ft
+LAB = 3;        % ft
+W = 2000;       % lb
+LAC_max = 6.7;  % ft
+dL = 1e-3;
+
+LAC = abs(D - LAB) + 1e-4;
+TAB = inf;
+TAC = inf;
+
+while (TAB > W) || (TAC > W)
+    theta = acos((D^2 + LAB^2 - LAC^2) / (2 * D * LAB));
+    phi = asin((LAB * sin(theta)) / LAC);
+
+    A = [-cos(theta),  cos(phi);
+          sin(theta),  sin(phi)];
+    b = [0; W];
+
+    T = A \ b;
+    TAB = T(1);
+    TAC = T(2);
+
+    if (TAB > W) || (TAC > W)
+        LAC = LAC + dL;
+    end
+
+    if LAC > LAC_max
+        error('No feasible LAC found up to LAC_max.');
+    end
+end
+
+LAC_min = LAC;
+fprintf('LAC_min = %.4f ft\n', LAC_min);
+fprintf('TAB = %.2f lb, TAC = %.2f lb\n', TAB, TAC);
+
+Lvec = LAC_min:dL:LAC_max;
+TABv = zeros(size(Lvec));
+TACv = zeros(size(Lvec));
+
+for k = 1:length(Lvec)
+    LAC = Lvec(k);
+    theta = acos((D^2 + LAB^2 - LAC^2) / (2 * D * LAB));
+    phi = asin((LAB * sin(theta)) / LAC);
+
+    A = [-cos(theta),  cos(phi);
+          sin(theta),  sin(phi)];
+    T = A \ [0; W];
+
+    TABv(k) = T(1);
+    TACv(k) = T(2);
+end
+
+plot(Lvec, TABv, 'LineWidth', 1.5); hold on;
+plot(Lvec, TACv, 'LineWidth', 1.5);
+yline(W, '--k', '2000 lb limit');
+grid on;
+xlabel('L_{AC} (ft)');
+ylabel('Tension (lb)');
+legend('T_{AB}', 'T_{AC}', 'Location', 'best');
+title('Cable Tensions vs L_{AC}');
+\end{lstlisting}
 
 \tutorialsection{tut5}{Tutorial 05: Advanced Plotting}
 \minitoc{
@@ -216,7 +389,7 @@ For the given values $D = 6~\text{ft}$, $L_{AB} = 3~\text{ft}$, and $W = 2000~\t
     \item \hyperlink{tut5-q42}{Problem 42: surface and contour plots of a temperature field}
 }
 
-\question{tut5-q19}{Problem 19*}{%
+\questiontitle{tut5-q19}{Problem 19*}
 The height $h(t)$ and horizontal distance $x(t)$ traveled by a ball thrown at an angle $A$ with a speed $v$ are given by
 \[
 h(t) = vt\sin A - \frac{1}{2}gt^{2},
@@ -229,15 +402,90 @@ At Earth's surface the acceleration due to gravity is $g = 9.81~\text{m/s}^{2}$.
     \item Use the values of $v$ and $A$ given in part (a) to plot the ball's trajectory; that is, plot $h$ versus $x$ for positive values of $t$.
     \item Plot the trajectories for $A = 45^\circ$ corresponding to five values of the initial velocity $v$: 20, 24, 28, 32, and 36 m/s.
 \end{enumerate}
-}
 
-\question{tut5-q42}{Problem 42}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+g = 9.81;
+v = 20;
+A = deg2rad(25);
+
+t_flight = 2 * v * sin(A) / g;
+h_max = (v * sin(A))^2 / (2 * g);
+range = v^2 * sin(2 * A) / g;
+
+fprintf('Maximum height = %.6f m\n', h_max);
+fprintf('Range          = %.6f m\n', range);
+fprintf('Flight time    = %.6f s\n', t_flight);
+
+t = linspace(0, t_flight, 300);
+h = v * t * sin(A) - 0.5 * g * t.^2;
+x = v * t * cos(A);
+
+figure;
+plot(x, h, 'LineWidth', 1.5);
+grid on;
+xlabel('x (m)');
+ylabel('h (m)');
+title('Trajectory for v = 20 m/s, A = 25 deg');
+
+figure;
+velocities = [20 24 28 32 36];
+A2 = deg2rad(45);
+
+for k = 1:length(velocities)
+    v0 = velocities(k);
+    tf = 2 * v0 * sin(A2) / g;
+    t = linspace(0, tf, 300);
+    h = v0 * t * sin(A2) - 0.5 * g * t.^2;
+    x = v0 * t * cos(A2);
+    plot(x, h, 'LineWidth', 1.5); hold on;
+end
+
+grid on;
+xlabel('x (m)');
+ylabel('h (m)');
+legend('20','24','28','32','36', 'Location', 'best');
+title('Trajectories for A = 45 deg');
+\end{lstlisting}
+
+\questiontitle{tut5-q42}{Problem 42}
 A square metal plate is heated to $80^\circ$C at the corner corresponding to $x = y = 1$. The temperature distribution in the plate is described by
 \[
 T = 80e^{-(x-1)^{2} - 3(y-1)^{2}}.
 \]
 Obtain the surface and contour plots for the temperature. Label each axis. What is the temperature at the corner corresponding to $x = y = 0$?
-}
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+x = linspace(0, 1, 101);
+y = linspace(0, 1, 101);
+[X, Y] = meshgrid(x, y);
+
+T = 80 * exp(-(X - 1).^2 - 3 * (Y - 1).^2);
+T00 = 80 * exp(-(0 - 1)^2 - 3 * (0 - 1)^2);
+
+fprintf('Temperature at x = 0, y = 0 is %.6f degC\n', T00);
+
+figure;
+surf(X, Y, T);
+shading interp;
+colorbar;
+xlabel('x');
+ylabel('y');
+zlabel('T (degC)');
+title('Surface Plot of Temperature');
+
+figure;
+contourf(X, Y, T, 20);
+colorbar;
+xlabel('x');
+ylabel('y');
+title('Contour Plot of Temperature');
+\end{lstlisting}
 
 \highlighttutorialsection{tut6}{Tutorial 06: Model Building and Regression}
 \minitoc{
@@ -245,7 +493,7 @@ Obtain the surface and contour plots for the temperature. Label each axis. What 
     \item \hyperlink{tut6-q9}{Problem 9: polynomial curve fits for drying time}
 }
 
-\question{tut6-q7}{Problem 7}{%
+\questiontitle{tut6-q7}{Problem 7}
 A certain electric circuit has a resistor and a capacitor. The capacitor is initially charged to $100$ V. When the power supply is detached, the capacitor voltage decays with time, as the following data table shows. Find a functional description of the capacitor voltage $v$ as a function of time $t$. Plot the function and the data on the same plot.
 
 \begin{center}
@@ -257,9 +505,35 @@ Voltage (V) & 100 & 62 & 38 & 21 & 13 & 7 & 4 & 2 & 3 \\
 \bottomrule
 \end{tabular}
 \end{center}
-}
 
-\question{tut6-q9}{Problem 9}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+t = [0 0.5 1 1.5 2 2.5 3 3.5 4];
+v = [100 62 38 21 13 7 4 2 3];
+
+% Exponential model v(t) = a*exp(b*t)
+p = polyfit(t, log(v), 1);
+b = p(1);
+a = exp(p(2));
+
+t_fine = linspace(min(t), max(t), 400);
+v_fit = a * exp(b * t_fine);
+v_data_fit = a * exp(b * t);
+
+fprintf('Best-fit model: v(t) = %.6f * exp(%.6f * t)\n', a, b);
+
+plot(t, v, 'ko', 'MarkerFaceColor', 'k'); hold on;
+plot(t_fine, v_fit, 'b-', 'LineWidth', 1.5);
+grid on;
+xlabel('Time (s)');
+ylabel('Voltage (V)');
+legend('Data', 'Exponential fit', 'Location', 'best');
+title('Capacitor Voltage Decay');
+\end{lstlisting}
+
+\questiontitle{tut6-q9}{Problem 9}
 The following data give the drying time $T$ of a certain paint as a function of the amount of a certain additive $A$.
 \begin{enumerate}[label=\alph*.]
     \item Find the first-, second-, third-, and fourth-degree polynomials that fit the data, and plot each polynomial with the data. Determine the quality of the curve fit for each by computing $J$, $S$, and $r$.
@@ -275,14 +549,67 @@ $T$ (min) & 130 & 115 & 110 & 90 & 89 & 89 & 95 & 100 & 110 & 125 \\
 \bottomrule
 \end{tabular}
 \end{center}
-}
 
-\tutorialsection{tut7}{Tutorial 07}
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+A = 0:9;
+T = [130 115 110 90 89 89 95 100 110 125];
+n = numel(A);
+SS_tot = sum((T - mean(T)).^2);
+
+figure;
+plot(A, T, 'ko', 'MarkerFaceColor', 'k'); hold on;
+
+degrees = 1:4;
+J = zeros(size(degrees));
+S = zeros(size(degrees));
+r = zeros(size(degrees));
+coeffs = cell(size(degrees));
+
+x_fine = linspace(min(A), max(A), 400);
+
+for k = 1:length(degrees)
+    deg = degrees(k);
+    coeffs{k} = polyfit(A, T, deg);
+    T_hat = polyval(coeffs{k}, A);
+    T_fine = polyval(coeffs{k}, x_fine);
+
+    J(k) = sum((T - T_hat).^2);
+    S(k) = sqrt(J(k) / (n - (deg + 1)));
+    r(k) = sqrt(max(0, 1 - J(k) / SS_tot));
+
+    plot(x_fine, T_fine, 'LineWidth', 1.2);
+end
+
+grid on;
+xlabel('Additive A (oz)');
+ylabel('Drying time T (min)');
+legend('Data', '1st', '2nd', '3rd', '4th', 'Location', 'best');
+title('Polynomial Fits to Drying-Time Data');
+
+disp(table(degrees.', J.', S.', r.', ...
+    'VariableNames', {'Degree','J','S','r'}));
+
+[~, best_idx] = max(r);
+best_deg = degrees(best_idx);
+best_poly = coeffs{best_idx};
+best_fun = @(x) polyval(best_poly, x);
+
+[A_opt, T_min] = fminbnd(best_fun, min(A), max(A));
+
+fprintf('Best polynomial degree = %d\n', best_deg);
+fprintf('Minimum drying time occurs near A = %.6f oz\n', A_opt);
+fprintf('Estimated minimum drying time = %.6f min\n', T_min);
+\end{lstlisting}
+
+\tutorialsection{tut7}{Tutorial 07: Interpolation}
 \minitoc{
     \item \hyperlink{tut7-q27}{Problem 27: linear interpolation with missing temperatures}
 }
 
-\question{tut7-q27}{Problem 27}{%
+\questiontitle{tut7-q27}{Problem 27}
 The following table gives temperature data in $^\circ$C as a function of time of day and day of the week at a specific location. Data are missing for the entries marked with a question mark (?). Use linear interpolation with MATLAB to estimate the temperature at the missing points.
 
 \begin{center}
@@ -298,24 +625,121 @@ Hour & Mon & Tues & Wed & Thurs & Fri \\
 \bottomrule
 \end{tabular}
 \end{center}
-}
 
-\tutorialsection{tut8}{Tutorial 08}
+\solutiontitle
+\begin{lstlisting}
+clear; clc;
+
+hours = 1:5;
+
+tues = [15 NaN 15 15 18];
+thurs = [17 11 NaN 17 20];
+
+tues_missing = interp1(hours(~isnan(tues)), tues(~isnan(tues)), 2, 'linear');
+thurs_missing = interp1(hours(~isnan(thurs)), thurs(~isnan(thurs)), 3, 'linear');
+
+fprintf('Estimated Tuesday temperature at hour 2 = %.6f degC\n', tues_missing);
+fprintf('Estimated Thursday temperature at hour 3 = %.6f degC\n', thurs_missing);
+\end{lstlisting}
+
+\tutorialsection{tut8}{Tutorial 08: Linear Systems}
 \minitoc{
     \item \hyperlink{tut8-q16}{Problem 16: traffic-flow solvability and sensor placement}
     \item \hyperlink{tut8-q22}{Problem 22: interpolate quadratic and cubic polynomials}
 }
 
-\question{tut8-q16}{Problem 16}{%
+\questiontitle{tut8-q16}{Problem 16}
 See Figure P16. Assume that no vehicles stop within the network. A traffic engineer wants to know if the traffic flows can be computed given the measured flows shown in the figure. If not, determine how many more traffic sensors need to be installed, and obtain the expressions for the other traffic flows in terms of the measured quantities.
-}
 
-\question{tut8-q22}{Problem 22}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc;
+
+% Unknowns are x = [f1 f2 f3 f4 f5 f6 f7]^T
+% Flow-balance equations from the six intersections:
+% Node 1: f1 + f3 = 300
+% Node 2: f1 - f2 - f4 = -300
+% Node 3: f2 + f5 = 600
+% Node 4: f3 + f6 = 400
+% Node 5: f4 - f6 + f7 = 200
+% Node 6: f5 + f7 = 600
+
+A = [1  0  1  0  0  0  0;
+     1 -1  0 -1  0  0  0;
+     0  1  0  0  1  0  0;
+     0  0  1  0  0  1  0;
+     0  0  0  1  0 -1  1;
+     0  0  0  0  1  0  1];
+
+b = [300; -300; 600; 400; 200; 600];
+
+rankA = rank(A);
+num_unknowns = size(A, 2);
+extra_sensors = num_unknowns - rankA;
+
+fprintf('Rank of coefficient matrix = %d\n', rankA);
+fprintf('Unknown traffic flows      = %d\n', num_unknowns);
+fprintf('Additional sensors needed  = %d\n', extra_sensors);
+
+% Let the additional sensors measure f3 = s and f4 = t.
+% Then every other flow can be written in terms of s and t.
+syms s t
+f3 = s;
+f4 = t;
+f1 = 300 - s;
+f2 = 600 - s - t;
+f5 = s + t;
+f6 = 400 - s;
+f7 = 600 - s - t;
+
+disp('General traffic-flow solution:')
+disp(table(f1, f2, f3, f4, f5, f6, f7))
+\end{lstlisting}
+
+\questiontitle{tut8-q22}{Problem 22}
 \begin{enumerate}[label=\alph*.]
     \item Use MATLAB to find the coefficients of the quadratic polynomial $y = ax^{2} + bx + c$ that passes through the three points $(x,y) = (1,4)$, $(3,73)$, $(5,120)$.
     \item Use MATLAB to find the coefficients of the cubic polynomial $y = ax^{3} + bx^{2} + cx + d$ that passes through the three points given in part (a).
 \end{enumerate}
-}
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc;
+
+x = [1; 3; 5];
+y = [4; 73; 120];
+
+% Part (a): unique quadratic
+A_quad = [x.^2, x, ones(size(x))];
+quad_coeffs = A_quad \ y;
+
+fprintf('Quadratic coefficients [a b c]^T:\n');
+disp(quad_coeffs);
+
+% Part (b): cubic is underdetermined with only three points.
+% Solve symbolically for a family of cubics in terms of free parameter d.
+syms a b c d
+eqns = [a*x(1)^3 + b*x(1)^2 + c*x(1) + d == y(1);
+        a*x(2)^3 + b*x(2)^2 + c*x(2) + d == y(2);
+        a*x(3)^3 + b*x(3)^2 + c*x(3) + d == y(3)];
+
+sol = solve(eqns, [a b c]);
+
+fprintf('General cubic coefficients:\n');
+fprintf('a = %s\n', char(sol.a));
+fprintf('b = %s\n', char(sol.b));
+fprintf('c = %s\n', char(sol.c));
+fprintf('d is free\n');
+
+% One particular cubic solution: choose d = 0
+particular = double([subs(sol.a, d, 0);
+                     subs(sol.b, d, 0);
+                     subs(sol.c, d, 0);
+                     0]);
+
+fprintf('One particular cubic [a b c d]^T with d = 0:\n');
+disp(particular);
+\end{lstlisting}
 
 \tutorialsection{tut9}{Tutorial 09: Numerical Methods}
 \minitoc{
@@ -323,7 +747,7 @@ See Figure P16. Assume that no vehicles stop within the network. A traffic engin
     \item \hyperlink{tut9-q45}{Problem 45: free, step, and total response of a second-order system}
 }
 
-\question{tut9-q44}{Problem 44}{%
+\questiontitle{tut9-q44}{Problem 44}
 The following state model describes the motion of a certain mass connected to a spring, with viscous friction on the surface, where $m = 1$, $c = 2$, and $k = 5$:
 \[
 \begin{bmatrix}
@@ -348,11 +772,33 @@ f(t).
 \]
 \begin{enumerate}[label=\alph*.]
     \item Use the \texttt{initial} function to plot the position $x_{1}$ of the mass if the initial position is $5$ and the initial velocity is $3$.
-    \item Use the \texttt{step} function to plot the step response of the position and velocity for zero initial conditions, where the magnitude of the step input is $10$. Compare your plot with the figure shown in the tutorial sheet.
+    \item Use the \texttt{step} function to plot the step response of the position and velocity for zero initial conditions, where the magnitude of the step input is $10$.
 \end{enumerate}
-}
 
-\question{tut9-q45}{Problem 45}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+A = [0 1; -5 -2];
+B = [0; 1];
+C = eye(2);
+D = [0; 0];
+
+sys = ss(A, B, C, D);
+
+figure;
+subplot(2,1,1);
+initial(sys(1), [5; 3]);
+grid on;
+title('Initial Response of Position x_1');
+
+subplot(2,1,2);
+step(10 * sys);
+grid on;
+title('Step Response of Position and Velocity (Input = 10)');
+\end{lstlisting}
+
+\questiontitle{tut9-q45}{Problem 45}
 Consider the following equation:
 \[
 5\ddot{y} + 2\dot{y} + 10y = f(t).
@@ -362,7 +808,33 @@ Consider the following equation:
     \item Plot the unit-step response for zero initial conditions.
     \item The total response to a step input is the sum of the free response and the step response. Demonstrate this fact for this equation by plotting the sum of the solutions found in parts (a) and (b) and comparing the plot with that generated by solving for the total response with $y(0) = 10$ and $\dot{y}(0) = -5$.
 \end{enumerate}
-}
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+ode_free = @(t, x) [x(2); (-2*x(2) - 10*x(1)) / 5];
+ode_step = @(t, x) [x(2); (1 - 2*x(2) - 10*x(1)) / 5];
+
+tspan = [0 15];
+
+[t_free, x_free] = ode45(ode_free, tspan, [10; -5]);
+[t_step, x_step] = ode45(ode_step, tspan, [0; 0]);
+[t_total, x_total] = ode45(ode_step, tspan, [10; -5]);
+
+y_sum = x_free(:,1) + x_step(:,1);
+
+plot(t_free, x_free(:,1), '--', 'LineWidth', 1.4); hold on;
+plot(t_step, x_step(:,1), ':', 'LineWidth', 1.4);
+plot(t_total, x_total(:,1), 'k-', 'LineWidth', 1.8);
+plot(t_free, y_sum, 'r-.', 'LineWidth', 1.4);
+grid on;
+xlabel('Time');
+ylabel('y(t)');
+legend('Free response', 'Step response', 'Total response', 'Free + step', ...
+    'Location', 'best');
+title('Verification of Superposition');
+\end{lstlisting}
 
 \tutorialsection{tut10}{Tutorial 10: Simulink}
 \minitoc{
@@ -371,7 +843,7 @@ Consider the following equation:
     \item \hyperlink{tut10-q13}{Problem 13: coupled first-order system with ramp input}
 }
 
-\question{tut10-q8}{Problem 8}{%
+\questiontitle{tut10-q8}{Problem 8}
 Create a Simulink model to plot the solution of the following equation for $0 < t < 6$:
 \[
 10\ddot{y} = 7\sin(4t) + 5\cos(3t),
@@ -380,9 +852,24 @@ y(0) = 3,
 \qquad
 \dot{y}(0) = 2.
 \]
-}
 
-\question{tut10-q15}{Problem 15}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+odefun = @(t, x) [x(2);
+                  (7*sin(4*t) + 5*cos(3*t)) / 10];
+
+[t, x] = ode45(odefun, [0 6], [3; 2]);
+
+plot(t, x(:,1), 'LineWidth', 1.5);
+grid on;
+xlabel('t');
+ylabel('y(t)');
+title('Solution of 10y'''' = 7sin(4t) + 5cos(3t)');
+\end{lstlisting}
+
+\questiontitle{tut10-q15}{Problem 15}
 Construct a Simulink model to plot the solution of the following equations for $0 < t < 10$:
 \[
 \dot{x} = -5x + 3y + 5\sin(2t),
@@ -394,9 +881,26 @@ x(0) = 0,
 \qquad
 y(0) = 0.
 \]
-}
 
-\question{tut10-q13}{Problem 13}{%
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+odefun = @(t, z) [-5*z(1) + 3*z(2) + 5*sin(2*t);
+                   3*z(1) - 4*z(2)];
+
+[t, z] = ode45(odefun, [0 10], [0; 0]);
+
+plot(t, z(:,1), 'LineWidth', 1.5); hold on;
+plot(t, z(:,2), 'LineWidth', 1.5);
+grid on;
+xlabel('t');
+ylabel('States');
+legend('x(t)', 'y(t)', 'Location', 'best');
+title('Solution of the Coupled First-Order System');
+\end{lstlisting}
+
+\questiontitle{tut10-q13}{Problem 13}
 Construct a Simulink model to plot the solution of the following equations for $0 < t < 2$:
 \[
 \dot{x}_{1} = -6x_{1} + 4x_{2},
@@ -407,6 +911,23 @@ Construct a Simulink model to plot the solution of the following equations for $
 \text{where } f(t) = 3t.
 \]
 Use the Ramp block in the Sources library.
-}
+
+\solutiontitle
+\begin{lstlisting}
+clear; clc; close all;
+
+odefun = @(t, x) [-6*x(1) + 4*x(2);
+                   5*x(1) - 7*x(2) + 3*t];
+
+[t, x] = ode45(odefun, [0 2], [0; 0]);
+
+plot(t, x(:,1), 'LineWidth', 1.5); hold on;
+plot(t, x(:,2), 'LineWidth', 1.5);
+grid on;
+xlabel('t');
+ylabel('States');
+legend('x_1(t)', 'x_2(t)', 'Location', 'best');
+title('Solution with Ramp Input f(t) = 3t');
+\end{lstlisting}
 
 \end{document}
